@@ -1,0 +1,1084 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Learnly | Personalized Learning</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+    <!-- ==============================
+         HEADER
+    =============================== -->
+    <header class="navbar">
+        <a href="#" class="logo" onclick="backToDashboard(); return false;">
+            Learn<span>ly</span>
+        </a>
+
+        <span class="nav-label">Personalized Learning</span>
+    </header>
+
+
+    <main>
+
+        <!-- ==============================
+             PAGE 1: DASHBOARD
+        =============================== -->
+        <section id="dashboard-page" class="page active">
+
+            <div class="page-heading">
+                <p class="eyebrow">YOUR LEARNING SPACE</p>
+
+                <h1>Learning Dashboard</h1>
+
+                <p class="intro">
+                    Choose a subject to begin learning at your own pace.
+                    Learnly will help you understand your current knowledge
+                    before you continue.
+                </p>
+            </div>
+
+
+            <!-- My Courses -->
+            <section class="section my-courses">
+
+                <div class="section-heading">
+                    <h2>My Courses</h2>
+
+                    <p class="muted">
+                        Continue with the courses you have started.
+                    </p>
+                </div>
+
+                <div class="empty-state">
+
+                    <div class="empty-state-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="1.5">
+                            <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21z"/>
+                            <path d="M4 5.5v15.5"/>
+                            <path d="M8 7h8"/>
+                            <path d="M8 11h6"/>
+                        </svg>
+                    </div>
+
+                    <h3>No courses yet</h3>
+
+                    <p>
+                        Your courses will appear here after you start learning.
+                    </p>
+
+                </div>
+
+            </section>
+
+
+            <!-- Explore Courses -->
+            <section class="section explore-section">
+
+                <div class="section-heading">
+                    <h2>Explore Courses</h2>
+
+                    <p class="muted">
+                        Select a subject that matches your learning goal.
+                    </p>
+                </div>
+
+
+                <div class="course-grid">
+
+                    <!-- Python -->
+                    <article class="course-card">
+
+                        <div class="course-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24"
+                                 fill="none"
+                                 stroke="currentColor"
+                                 stroke-width="1.6">
+                                <rect x="4" y="4" width="16" height="16" rx="2"/>
+                                <path d="M8 9h3"/>
+                                <path d="M8 13h8"/>
+                                <path d="M8 17h5"/>
+                            </svg>
+                        </div>
+
+                        <h3>Python Programming</h3>
+
+                        <p>
+                            Learn programming fundamentals, data types,
+                            conditions, loops, functions, and object-oriented
+                            programming.
+                        </p>
+
+                        <button type="button"
+                                class="btn-primary"
+                                onclick="startCourse('Python Programming')">
+                            Start Course
+                        </button>
+
+                    </article>
+
+
+                    <!-- Data Structures -->
+                    <article class="course-card">
+
+                        <div class="course-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24"
+                                 fill="none"
+                                 stroke="currentColor"
+                                 stroke-width="1.6">
+                                <rect x="3" y="4" width="6" height="6" rx="1"/>
+                                <rect x="15" y="4" width="6" height="6" rx="1"/>
+                                <rect x="9" y="15" width="6" height="6" rx="1"/>
+                                <path d="M9 7h6"/>
+                                <path d="M18 10v2.5L12 15"/>
+                                <path d="M6 10v2.5L12 15"/>
+                            </svg>
+                        </div>
+
+                        <h3>Data Structures &amp; Algorithms</h3>
+
+                        <p>
+                            Explore arrays, linked lists, stacks, queues,
+                            trees, graphs, and fundamental algorithms.
+                        </p>
+
+                        <button type="button"
+                                class="btn-primary"
+                                onclick="startCourse('Data Structures & Algorithms')">
+                            Start Course
+                        </button>
+
+                    </article>
+
+
+                    <!-- Web Development -->
+                    <article class="course-card">
+
+                        <div class="course-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24"
+                                 fill="none"
+                                 stroke="currentColor"
+                                 stroke-width="1.6">
+                                <rect x="3" y="4" width="18" height="16" rx="2"/>
+                                <path d="M3 9h18"/>
+                                <path d="M7 6.5h.01"/>
+                                <path d="M10 6.5h.01"/>
+                                <path d="m9 13-3 2 3 2"/>
+                                <path d="m15 13 3 2-3 2"/>
+                            </svg>
+                        </div>
+
+                        <h3>Web Development</h3>
+
+                        <p>
+                            Learn the foundations of HTML, CSS, JavaScript,
+                            and building interactive websites.
+                        </p>
+
+                        <button type="button"
+                                class="btn-primary"
+                                onclick="startCourse('Web Development')">
+                            Start Course
+                        </button>
+
+                    </article>
+
+
+                    <!-- Java -->
+                    <article class="course-card">
+
+                        <div class="course-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24"
+                                 fill="none"
+                                 stroke="currentColor"
+                                 stroke-width="1.6">
+                                <path d="M12 3c-2 2-2 3 0 4"/>
+                                <path d="M15 5c-3 3-3 4 0 6"/>
+                                <path d="M6 13h12"/>
+                                <path d="M7 16c3 2 7 2 10 0"/>
+                                <path d="M8 19c2 1 6 1 8 0"/>
+                            </svg>
+                        </div>
+
+                        <h3>Java Programming</h3>
+
+                        <p>
+                            Understand Java syntax, variables, control
+                            statements, methods, classes, and objects.
+                        </p>
+
+                        <button type="button"
+                                class="btn-primary"
+                                onclick="startCourse('Java Programming')">
+                            Start Course
+                        </button>
+
+                    </article>
+
+                </div>
+
+            </section>
+
+        </section>
+
+
+
+        <!-- ==============================
+             PAGE 2: COURSE EXPERIENCE SETUP
+        =============================== -->
+        <section id="experience-page" class="page">
+
+            <div class="experience-container">
+
+                <button type="button"
+                        class="text-button"
+                        onclick="backToDashboard()">
+                    &larr; Back to Dashboard
+                </button>
+
+
+                <div class="experience-heading">
+
+                    <p class="eyebrow">COURSE SETUP</p>
+
+                    <h1>Set up your learning experience</h1>
+
+                    <p class="course-name" id="selected-course-name">
+                        Python Programming
+                    </p>
+
+                </div>
+
+
+                <div class="level-section">
+
+                    <h2>What is your current experience level?</h2>
+
+                    <p class="muted">
+                        Choose the option that best describes your current
+                        understanding of this subject.
+                    </p>
+
+
+                    <div class="level-options">
+
+                        <button type="button"
+                                class="level-card"
+                                data-level="Beginner"
+                                aria-pressed="false"
+                                onclick="selectLevel('Beginner')">
+
+                            <span class="level-title">Beginner</span>
+
+                            <span class="level-description">
+                                I am new to this subject or need to strengthen
+                                the basics.
+                            </span>
+
+                        </button>
+
+
+                        <button type="button"
+                                class="level-card"
+                                data-level="Intermediate"
+                                aria-pressed="false"
+                                onclick="selectLevel('Intermediate')">
+
+                            <span class="level-title">Intermediate</span>
+
+                            <span class="level-description">
+                                I understand the basics and can solve some
+                                problems independently.
+                            </span>
+
+                        </button>
+
+
+                        <button type="button"
+                                class="level-card"
+                                data-level="Advanced"
+                                aria-pressed="false"
+                                onclick="selectLevel('Advanced')">
+
+                            <span class="level-title">Advanced</span>
+
+                            <span class="level-description">
+                                I know the core concepts and can solve more
+                                complex problems.
+                            </span>
+
+                        </button>
+
+                    </div>
+
+
+                    <p id="level-validation"
+                       class="validation-message"
+                       role="alert"
+                       hidden>
+                        Please select your experience level to continue.
+                    </p>
+
+
+                    <div class="experience-actions">
+
+                        <button type="button"
+                                class="btn-primary"
+                                onclick="continueToInstructions()">
+                            Continue
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- ==============================
+             PAGE 3: ASSESSMENT INSTRUCTIONS
+        =============================== -->
+        <section id="instructions-page" class="page">
+
+            <div class="assessment-instructions-container">
+
+                <button type="button"
+                        class="text-button"
+                        onclick="backToExperience()">
+                    &larr; Back to Course Setup
+                </button>
+
+
+                <div class="instructions-heading">
+
+                    <p class="eyebrow">KNOWLEDGE ASSESSMENT</p>
+
+                    <h1>Knowledge Assessment</h1>
+
+                    <p class="intro">
+                        Assess your current understanding of
+                        <strong id="instructions-course-name">
+                            Python Programming
+                        </strong>.
+                        Your responses will help identify areas you may need
+                        to strengthen.
+                    </p>
+
+                </div>
+
+
+                <!-- Assessment information -->
+                <div class="question-count-card">
+
+                    <div class="question-count-number">20</div>
+
+                    <div>
+                        <h2>Questions</h2>
+
+                        <p class="muted">
+                            Multiple-choice assessment
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <!-- Instructions -->
+                <div class="instructions-list">
+
+                    <h2>Instructions</h2>
+
+                    <ul>
+                        <li>
+                            Select one answer for each question.
+                        </li>
+
+                        <li>
+                            Use Next and Previous to move between questions.
+                        </li>
+
+                        <li>
+                            You can skip a question and return to it later.
+                        </li>
+
+                        <li>
+                            Use the numbered question panel to navigate
+                            directly to a question.
+                        </li>
+
+                        <li>
+                            Review unanswered questions before submitting
+                            your assessment.
+                        </li>
+                    </ul>
+
+                </div>
+
+
+                <div class="instructions-actions">
+
+                    <button type="button"
+                            class="btn-primary"
+                            id="btn-begin-assessment"
+                            onclick="beginAssessment()">
+                        Begin Assessment
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- ==============================
+             PAGE 4: ASSESSMENT QUESTIONS
+        =============================== -->
+        <section id="questions-page" class="page">
+
+            <!-- Assessment heading -->
+            <div class="assessment-page-heading">
+
+                <div>
+                    <p class="eyebrow">KNOWLEDGE ASSESSMENT</p>
+
+                    <h1 id="assessment-course-name">
+                        Python Programming
+                    </h1>
+                </div>
+
+                <p id="question-counter" class="question-counter">
+                    Question 1 of 20
+                </p>
+
+            </div>
+
+
+            <!-- Progress -->
+            <div class="assessment-progress">
+
+                <div class="assessment-progress-track"
+                     role="progressbar"
+                     aria-label="Assessment completion"
+                     aria-valuemin="0"
+                     aria-valuemax="20"
+                     aria-valuenow="0"
+                     id="assessment-progress-track">
+
+                    <div id="assessment-progress-fill"></div>
+
+                </div>
+
+                <p id="assessment-progress-text">
+                    0 of 20 answered
+                </p>
+
+            </div>
+
+
+            <!-- Main assessment layout -->
+            <div class="assessment-layout">
+
+
+                <!-- Question number sidebar -->
+                <aside id="question-sidebar"
+                       class="question-sidebar"
+                       aria-label="Question navigation">
+
+                    <div class="question-sidebar-heading">
+
+                        <h2>Questions</h2>
+
+                        <button type="button"
+                                class="panel-toggle"
+                                aria-label="Close question panel"
+                                title="Close question panel"
+                                onclick="toggleQuestionSidebar(false)">
+
+                            <svg viewBox="0 0 24 24"
+                                 fill="none"
+                                 stroke="currentColor"
+                                 stroke-width="1.8">
+                                <path d="m15 18-6-6 6-6"/>
+                            </svg>
+
+                        </button>
+
+                    </div>
+
+
+                    <div id="question-number-grid"
+                         class="question-number-grid">
+                        <!-- Question numbers are created by JavaScript. -->
+                    </div>
+
+
+                    <div class="question-status-legend">
+
+                        <p>
+                            <span class="status-dot status-current"></span>
+                            Current
+                        </p>
+
+                        <p>
+                            <span class="status-dot status-answered"></span>
+                            Answered
+                        </p>
+
+                        <p>
+                            <span class="status-dot status-unanswered"></span>
+                            Unanswered
+                        </p>
+
+                    </div>
+
+                </aside>
+
+
+                <!-- Reopen sidebar button -->
+                <button type="button"
+                        id="open-question-sidebar"
+                        class="panel-reopen-button"
+                        aria-label="Open question panel"
+                        title="Open question panel"
+                        onclick="toggleQuestionSidebar(true)"
+                        hidden>
+
+                    <svg viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="1.8">
+                        <path d="m9 18 6-6-6-6"/>
+                    </svg>
+
+                </button>
+
+
+                <!-- Question content -->
+                <div class="question-content">
+
+                    <div class="question-content-heading">
+
+                        <p class="eyebrow" id="question-label">
+                            QUESTION 1
+                        </p>
+
+                        <h2 id="question-text">
+                            QUESTION
+                        </h2>
+
+                    </div>
+
+
+                    <!-- Answer choices -->
+                    <div class="answer-options"
+                         role="group"
+                         aria-label="Answer choices">
+
+                        <button type="button"
+                                class="answer-option"
+                                data-answer="A"
+                                aria-pressed="false"
+                                onclick="selectAnswer('A')">
+
+                            <span class="answer-letter">A</span>
+
+                        </button>
+
+
+                        <button type="button"
+                                class="answer-option"
+                                data-answer="B"
+                                aria-pressed="false"
+                                onclick="selectAnswer('B')">
+
+                            <span class="answer-letter">B</span>
+
+                        </button>
+
+
+                        <button type="button"
+                                class="answer-option"
+                                data-answer="C"
+                                aria-pressed="false"
+                                onclick="selectAnswer('C')">
+
+                            <span class="answer-letter">C</span>
+
+                        </button>
+
+
+                        <button type="button"
+                                class="answer-option"
+                                data-answer="D"
+                                aria-pressed="false"
+                                onclick="selectAnswer('D')">
+
+                            <span class="answer-letter">D</span>
+
+                        </button>
+
+                    </div>
+
+
+                    <!-- Previous and Next -->
+                    <div class="question-navigation">
+
+                        <button type="button"
+                                id="btn-previous-question"
+                                class="btn-secondary"
+                                onclick="goToPreviousQuestion()"
+                                disabled>
+                            Previous
+                        </button>
+
+                        <button type="button"
+                                id="btn-next-question"
+                                class="btn-primary"
+                                onclick="goToNextQuestion()">
+                            Next
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Submit -->
+            <div class="assessment-submit-row">
+
+                <button type="button"
+                        id="btn-submit-assessment"
+                        class="btn-secondary"
+                        onclick="submitAssessment()">
+                    Submit Assessment
+                </button>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- ==============================
+         FOOTER
+    =============================== -->
+    <footer>
+        <p>Learnly | Personalized Learning</p>
+    </footer>
+
+
+
+    <!-- ==============================
+         JAVASCRIPT
+    =============================== -->
+    <script>
+
+        // ----------------------------------
+        // Application state
+        // ----------------------------------
+
+        let selectedCourse = "";
+        let selectedLevel = "";
+
+        const totalQuestions = 20;
+
+        let currentQuestion = 1;
+
+        let answers = Array(totalQuestions).fill("");
+
+
+        // ----------------------------------
+        // Display the selected page
+        // ----------------------------------
+
+        function showPage(pageId) {
+
+            const pages = document.querySelectorAll(".page");
+
+            pages.forEach(function (page) {
+                page.classList.remove("active");
+            });
+
+            const selectedPage = document.getElementById(pageId);
+
+            if (selectedPage) {
+                selectedPage.classList.add("active");
+            }
+
+            window.scrollTo({
+                top: 0,
+                behavior: "auto"
+            });
+        }
+
+
+        // ----------------------------------
+        // Start a course
+        // ----------------------------------
+
+        function startCourse(courseName) {
+
+            selectedCourse = courseName;
+            selectedLevel = "";
+
+            document.getElementById("selected-course-name").textContent =
+                selectedCourse;
+
+            document.querySelectorAll(".level-card").forEach(function (card) {
+
+                card.classList.remove("selected");
+
+                card.setAttribute("aria-pressed", "false");
+
+            });
+
+            document.getElementById("level-validation").hidden = true;
+
+            showPage("experience-page");
+        }
+
+
+        // ----------------------------------
+        // Select experience level
+        // ----------------------------------
+
+        function selectLevel(level) {
+
+            selectedLevel = level;
+
+            document.querySelectorAll(".level-card").forEach(function (card) {
+
+                const isSelected = card.dataset.level === level;
+
+                card.classList.toggle("selected", isSelected);
+
+                card.setAttribute(
+                    "aria-pressed",
+                    String(isSelected)
+                );
+
+            });
+
+            document.getElementById("level-validation").hidden = true;
+        }
+
+
+        // ----------------------------------
+        // Return to Dashboard
+        // ----------------------------------
+
+        function backToDashboard() {
+
+            showPage("dashboard-page");
+        }
+
+
+        // ----------------------------------
+        // Continue to instructions
+        // ----------------------------------
+
+        function continueToInstructions() {
+
+            if (!selectedLevel) {
+
+                document.getElementById("level-validation").hidden = false;
+
+                return;
+            }
+
+            document.getElementById("instructions-course-name").textContent =
+                selectedCourse;
+
+            showPage("instructions-page");
+        }
+
+
+        // ----------------------------------
+        // Return to course setup
+        // ----------------------------------
+
+        function backToExperience() {
+
+            showPage("experience-page");
+        }
+
+
+        // ----------------------------------
+        // Begin assessment
+        // ----------------------------------
+
+        function beginAssessment() {
+
+            currentQuestion = 1;
+
+            answers = Array(totalQuestions).fill("");
+
+            document.getElementById("assessment-course-name").textContent =
+                selectedCourse;
+
+            createQuestionNumbers();
+
+            toggleQuestionSidebar(true);
+
+            displayQuestion();
+
+            showPage("questions-page");
+        }
+
+
+        // ----------------------------------
+        // Create question number buttons
+        // ----------------------------------
+
+        function createQuestionNumbers() {
+
+            const grid = document.getElementById("question-number-grid");
+
+            grid.replaceChildren();
+
+            for (let number = 1; number <= totalQuestions; number++) {
+
+                const button = document.createElement("button");
+
+                button.type = "button";
+
+                button.className = "question-number unanswered";
+
+                button.textContent = number;
+
+                button.setAttribute(
+                    "aria-label",
+                    "Go to question " + number
+                );
+
+                button.addEventListener("click", function () {
+
+                    currentQuestion = number;
+
+                    displayQuestion();
+
+                });
+
+                grid.appendChild(button);
+            }
+        }
+
+
+        // ----------------------------------
+        // Display the current question
+        // ----------------------------------
+
+        function displayQuestion() {
+
+            document.getElementById("question-counter").textContent =
+                "Question " + currentQuestion + " of " + totalQuestions;
+
+            document.getElementById("question-label").textContent =
+                "QUESTION " + currentQuestion;
+
+            // Placeholder question for mentor review.
+            document.getElementById("question-text").textContent =
+                "QUESTION";
+
+            // Display the previously selected answer, if any.
+            document.querySelectorAll(".answer-option").forEach(function (button) {
+
+                const isSelected =
+                    button.dataset.answer === answers[currentQuestion - 1];
+
+                button.classList.toggle("selected", isSelected);
+
+                button.setAttribute(
+                    "aria-pressed",
+                    String(isSelected)
+                );
+
+            });
+
+            document.getElementById("btn-previous-question").disabled =
+                currentQuestion === 1;
+
+            document.getElementById("btn-next-question").disabled =
+                currentQuestion === totalQuestions;
+
+            updateQuestionStatus();
+        }
+
+
+        // ----------------------------------
+        // Select an answer
+        // ----------------------------------
+
+        function selectAnswer(answer) {
+
+            answers[currentQuestion - 1] = answer;
+
+            displayQuestion();
+        }
+
+
+        // ----------------------------------
+        // Move to the previous question
+        // ----------------------------------
+
+        function goToPreviousQuestion() {
+
+            if (currentQuestion > 1) {
+
+                currentQuestion--;
+
+                displayQuestion();
+            }
+        }
+
+
+        // ----------------------------------
+        // Move to the next question
+        // ----------------------------------
+
+        function goToNextQuestion() {
+
+            if (currentQuestion < totalQuestions) {
+
+                currentQuestion++;
+
+                displayQuestion();
+            }
+        }
+
+
+        // ----------------------------------
+        // Update navigation and progress
+        // ----------------------------------
+
+        function updateQuestionStatus() {
+
+            const answeredCount = answers.filter(function (answer) {
+                return answer !== "";
+            }).length;
+
+            const percentage =
+                (answeredCount / totalQuestions) * 100;
+
+            document.getElementById("assessment-progress-fill").style.width =
+                percentage + "%";
+
+            document.getElementById("assessment-progress-text").textContent =
+                answeredCount + " of " + totalQuestions + " answered";
+
+            document.getElementById("assessment-progress-track").setAttribute(
+                "aria-valuenow",
+                answeredCount
+            );
+
+            const questionButtons =
+                document.querySelectorAll(".question-number");
+
+            questionButtons.forEach(function (button, index) {
+
+                const questionNumber = index + 1;
+
+                const isCurrent = questionNumber === currentQuestion;
+
+                const isAnswered = answers[index] !== "";
+
+                button.classList.toggle("current", isCurrent);
+
+                button.classList.toggle(
+                    "answered",
+                    isAnswered && !isCurrent
+                );
+
+                button.classList.toggle(
+                    "unanswered",
+                    !isAnswered && !isCurrent
+                );
+
+                button.setAttribute(
+                    "aria-current",
+                    isCurrent ? "step" : "false"
+                );
+
+            });
+        }
+
+
+        // ----------------------------------
+        // Open or close the question sidebar
+        // ----------------------------------
+
+        function toggleQuestionSidebar(open) {
+
+            const sidebar = document.getElementById("question-sidebar");
+
+            const reopenButton =
+                document.getElementById("open-question-sidebar");
+
+            sidebar.hidden = !open;
+
+            reopenButton.hidden = open;
+        }
+
+
+        // ----------------------------------
+        // Submit assessment
+        // ----------------------------------
+
+        function submitAssessment() {
+
+            const answeredCount = answers.filter(function (answer) {
+                return answer !== "";
+            }).length;
+
+            const unansweredCount = totalQuestions - answeredCount;
+
+            let message =
+                "You have answered " + answeredCount +
+                " out of " + totalQuestions + " questions.";
+
+            if (unansweredCount > 0) {
+
+                message += "\n\n" + unansweredCount +
+                    " question(s) are unanswered.";
+
+                message += "\n\nDo you want to submit anyway?";
+
+            } else {
+
+                message += "\n\nAre you sure you want to submit?";
+            }
+
+            const confirmed = window.confirm(message);
+
+            if (!confirmed) {
+                return;
+            }
+
+            window.alert(
+                
+                "Your answers have not been saved, and no score has been " +
+                "calculated. Backend assessment processing will be added later."
+            );
+        }
+
+    </script>
+
+</body>
+</html>

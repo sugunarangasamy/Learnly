@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learnly | Skill Gaps</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        :root {
+            --status-completed: #15803d;
+            --status-inprogress: #b45309;
+            --status-available: #0369a1;
+            --status-locked: #64748b;
+            --status-gap: #b91c1c;
+        }
+
+        .page-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .sg-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .sg-stat-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 16px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .sg-stat-number {
+            font-size: 26px;
+            font-weight: 700;
+            line-height: 1;
+            color: var(--text);
+        }
+
+        .sg-stat-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .sg-stat-desc {
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.4;
+            margin: 0;
+        }
+
+        .missing-skills-alert {
+            background: #FEF2F2;
+            border: 1px solid #FECACA;
+            border-radius: 6px;
+            padding: 16px 20px;
+            margin-bottom: 24px;
+        }
+
+        .missing-skills-alert h3 {
+            margin: 0 0 4px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #991B1B;
+        }
+
+        .missing-skills-alert p {
+            margin: 0 0 8px;
+            font-size: 13px;
+            color: #7F1D1D;
+            line-height: 1.5;
+        }
+
+        .missing-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .missing-list-item {
+            font-size: 12px;
+            font-weight: 600;
+            color: #991B1B;
+            background: #FFFFFF;
+            border: 1px solid #FCA5A5;
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+
+        .assessment-banner {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 14px 18px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .topics-analysis-container {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .topic-analysis-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 18px 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .card-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .topic-title-group {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+        }
+
+        .topic-order-badge {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--muted);
+            min-width: 20px;
+        }
+
+        .topic-card-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text);
+            margin: 0;
+        }
+
+        .topic-meta-line {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .dims-strip {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .dims-strip strong {
+            color: var(--text);
+        }
+
+        .card-body-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            background: #FAFCFD;
+            padding: 12px 16px;
+            border-radius: 4px;
+            border: 1px solid #EEF2F6;
+        }
+
+        .meta-col h4 {
+            margin: 0 0 4px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--muted);
+        }
+
+        .meta-col p {
+            margin: 0;
+            font-size: 13px;
+            line-height: 1.5;
+            color: var(--text);
+        }
+
+        .missing-warning-text {
+            color: #DC2626;
+            font-weight: 600;
+            margin-top: 4px;
+            font-size: 12px;
+        }
+
+        .card-action-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .bottom-actions-row {
+            margin-top: 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 14px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        @media (max-width: 900px) {
+            .sg-stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .card-body-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .sg-stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .page-header-row {
+                flex-direction: column;
+            }
+            .bottom-actions-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="navbar">
+        <a href="{{ url_for('home') }}" class="logo">Learn<span>ly</span></a>
+
+        <div class="nav-links-cluster">
+            <a href="{{ url_for('module3', course=course) }}" class="nav-tab-link">Knowledge Graph</a>
+            <a href="{{ url_for('module4', course=course) }}" class="nav-tab-link active">Skill Gaps</a>
+            <a href="{{ url_for('module5', course=course) }}" class="nav-tab-link">Learning Path</a>
+            <a href="{{ url_for('module6') }}" class="nav-tab-link">My Progress</a>
+            <a href="{{ url_for('home') }}" class="nav-tab-link">&larr; Dashboard</a>
+        </div>
+    </header>
+
+    <main>
+        <div class="page-header-row">
+            <div>
+                <h1 style="font-size: 24px; font-weight: 700; margin-bottom: 4px;">
+                    Skill Gaps
+                </h1>
+                <p style="color: var(--muted); margin: 0; font-size: 14px;">
+                    Course: <strong style="color: var(--text);">{{ gap_data.course_name if gap_data else course }}</strong>
+                </p>
+            </div>
+
+            {% if all_courses %}
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <label for="course-select" style="font-size: 13px; font-weight: 600; color: var(--muted);">Switch Course:</label>
+                <select id="course-select" onchange="location.href='/module4?course=' + encodeURIComponent(this.value);"
+                    style="padding: 7px 12px; border-radius: 4px; border: 1px solid var(--border); background: var(--white); font-size: 13px; font-weight: 600; color: var(--text); cursor: pointer;">
+                    {% for c in all_courses %}
+                    <option value="{{ c['name'] }}" {% if (gap_data and c['name']==gap_data.course_name) or c['name']==course %}selected{% endif %}>
+                        {{ c['name'] }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if gap_data and gap_data.skill_gaps %}
+        {% set summary = gap_data.skill_gaps.summary %}
+
+        <!-- SIMPLE SKILL-GAP SUMMARY BAR -->
+        <section class="simple-summary-bar" aria-label="Skill gap summary statistics">
+            <div class="simple-summary-cell">
+                <strong>{{ summary.verified_mastery_count }}</strong>
+                <span>Verified Mastery</span>
+            </div>
+            <div class="simple-summary-cell">
+                <strong>{{ summary.proficient_count }}</strong>
+                <span>Proficient Topics</span>
+            </div>
+            <div class="simple-summary-cell">
+                <strong>{{ summary.needs_practice_count }}</strong>
+                <span>Needs Practice</span>
+            </div>
+            <div class="simple-summary-cell">
+                <strong>{{ summary.locked_count }}</strong>
+                <span>Locked Topics</span>
+            </div>
+        </section>
+
+        <!-- MISSING PREREQUISITES BANNER -->
+        {% if summary.missing_skills %}
+        <section class="missing-skills-alert" aria-label="Missing prerequisite skills warning" style="border-radius: 4px;">
+            <h3>Incomplete Prerequisite Skills</h3>
+            <p>Complete study and pass the mastery assessment for these foundational topics to unlock downstream topics:</p>
+            <ul class="missing-list">
+                {% for skill in summary.missing_skills %}
+                <li class="missing-list-item">{{ skill }}</li>
+                {% endfor %}
+            </ul>
+        </section>
+        {% endif %}
+
+        <!-- ASSESSMENT BANNER -->
+        {% if not gap_data.latest_assessment %}
+        <div class="assessment-banner" style="border-radius: 4px;">
+            <div>
+                <strong style="color: var(--text); font-size: 14px;">No initial assessment recorded yet</strong>
+                <p style="margin: 2px 0 0; color: var(--muted); font-size: 13px;">
+                    Take the course assessment to evaluate concepts, output tracing, and coding.
+                </p>
+            </div>
+            <a href="{{ url_for('home') }}" class="btn-primary" style="font-size: 13px; padding: 7px 14px;">
+                Take Assessment &rarr;
+            </a>
+        </div>
+        {% else %}
+        <div class="assessment-banner" style="border-radius: 4px;">
+            <div>
+                <strong style="color: var(--text); font-size: 14px;">
+                    Initial Assessment: {{ gap_data.latest_assessment.score_percentage }}%
+                    ({{ gap_data.latest_assessment.total_score }}/{{ gap_data.latest_assessment.total_questions }} passed)
+                </strong>
+                <p style="margin: 2px 0 0; color: var(--muted); font-size: 12px;">
+                    Submitted at: {{ gap_data.latest_assessment.submitted_at }}
+                </p>
+            </div>
+            <a href="{{ url_for('home') }}" class="btn-secondary" style="font-size: 12px; padding: 6px 12px;">
+                Retake Full Assessment
+            </a>
+        </div>
+        {% endif %}
+
+        <!-- TOPIC-BY-TOPIC BREAKDOWN -->
+        <section aria-label="Topic skill gap breakdown">
+            <h2 style="font-size: 17px; font-weight: 700; color: var(--text); margin: 0 0 14px;">
+                Topic-by-Topic Breakdown
+            </h2>
+
+            <div class="topics-analysis-container">
+                {% for topic in gap_data.skill_gaps.topics %}
+                {% set m_cls = topic.mastery_state | lower | replace(' ', '-') %}
+                <article class="topic-analysis-card" style="border-radius: 4px;">
+                    <div class="card-header-row">
+                        <div class="topic-title-group">
+                            <span class="topic-order-badge">{{ loop.index }}.</span>
+                            <h3 class="topic-card-title">{{ topic.name }}</h3>
+                        </div>
+
+                        <div class="topic-meta-line">
+                            <span class="mastery-text {{ m_cls }}">{{ topic.mastery_state }}</span>
+                            <span style="color: var(--muted);">&middot;</span>
+                            <span style="color: var(--muted);">Score: <strong>{{ topic.mastery_score }}%</strong></span>
+                        </div>
+                    </div>
+
+                    <div class="dims-strip">
+                        <span>Concepts: <strong>{{ topic.dimensions.conceptual ~ '%' if topic.dimensions.conceptual is not none else '—' }}</strong></span>
+                        <span>Code Output: <strong>{{ topic.dimensions.comprehension ~ '%' if topic.dimensions.comprehension is not none else '—' }}</strong></span>
+                        <span>Coding &amp; Debug: <strong>{{ topic.dimensions.practical ~ '%' if topic.dimensions.practical is not none else '—' }}</strong></span>
+                    </div>
+
+                    <div class="card-body-grid">
+                        <div class="meta-col">
+                            <h4>Prerequisite Requirements</h4>
+                            {% if topic.prerequisites %}
+                            <p>{{ topic.prerequisites | join(', ') }}</p>
+                            {% else %}
+                            <p style="color: var(--muted); font-style: italic;">None (Foundational topic)</p>
+                            {% endif %}
+
+                            {% if topic.missing_prerequisites %}
+                            <div class="missing-warning-text">
+                                Incomplete: {{ topic.missing_prerequisites | join(', ') }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="meta-col">
+                            <h4>Study Advice</h4>
+                            <p>{{ topic.recommendation }}</p>
+                        </div>
+                    </div>
+
+                    <div class="card-action-footer">
+                        <span style="font-size: 12px; color: var(--muted);">Path Status: <strong class="status-label {{ topic.status | lower | replace(' ', '-') }}">{{ topic.status }}</strong></span>
+                        {% if topic.status != 'Locked' %}
+                        <a href="{{ url_for('topic_practice', topic_id=topic.id, course=gap_data.course_name) }}"
+                           class="btn-secondary" style="min-height: 34px; font-size: 12px; padding: 5px 12px;">
+                            {% if topic.status == 'Completed' or topic.mastery_state in ('Verified Mastery', 'Proficient') %}Review Topic{% elif topic.status == 'Assessment Pending' %}Start Mastery Assessment &rarr;{% elif topic.status == 'Needs Attention' %}Revise &amp; Retake &rarr;{% elif topic.status == 'In Progress' %}Continue Studying &rarr;{% else %}Study &rarr;{% endif %}
+                        </a>
+                        {% endif %}
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        <div class="bottom-actions-row">
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <a href="{{ url_for('module5', course=course) }}" class="btn-primary">Learning Path &rarr;</a>
+                <a href="{{ url_for('module3', course=course) }}" class="btn-secondary">Knowledge Graph</a>
+            </div>
+            <a href="{{ url_for('home') }}" class="btn-secondary">Return to Dashboard</a>
+        </div>
+    </main>
+
+</body>
+</html>

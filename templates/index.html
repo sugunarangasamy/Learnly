@@ -1,1083 +1,1130 @@
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Learnly | Personalized Learning</title>
 
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        /* Account screen */
+        .account-page {
+            padding: 48px 20px;
+            min-height: 70vh;
+        }
+
+        .account-container {
+            width: 100%;
+            max-width: 460px;
+            margin: 0 auto;
+        }
+
+        .account-card {
+            padding: 26px;
+            background: #ffffff;
+            border: 1px solid #dce3e8;
+            border-radius: 4px;
+        }
+
+        .account-card h1 {
+            margin-bottom: 8px;
+        }
+
+        .account-description {
+            margin-bottom: 24px;
+            color: #5f6b75;
+            line-height: 1.6;
+        }
+
+        .account-tabs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .account-tab {
+            padding: 12px;
+            border: 1px solid #cbd5dd;
+            border-radius: 4px;
+            background: #ffffff;
+            color: #263746;
+            cursor: pointer;
+            font: inherit;
+        }
+
+        .account-tab.active {
+            background: #1f4959;
+            border-color: #1f4959;
+            color: #ffffff;
+        }
+
+        .account-field {
+            margin-bottom: 18px;
+        }
+
+        .account-field label {
+            display: block;
+            margin-bottom: 7px;
+            font-weight: 600;
+        }
+
+        .account-field input {
+            box-sizing: border-box;
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5dd;
+            border-radius: 4px;
+            font: inherit;
+        }
+
+        .account-field input:focus {
+            outline: 2px solid #5c7c89;
+            outline-offset: 1px;
+        }
+
+        .account-submit {
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        .account-error {
+            padding: 12px;
+            margin-bottom: 18px;
+            border: 1px solid #d9a4a4;
+            background: #fff5f5;
+            color: #8a2525;
+            border-radius: 4px;
+        }
+
+        .account-note {
+            margin-top: 18px;
+            color: #5f6b75;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .account-hidden {
+            display: none !important;
+        }
+
+        .logout-form {
+            margin: 0;
+        }
+
+        .logout-button {
+            padding: 8px 14px;
+            border: 1px solid #cbd5dd;
+            border-radius: 4px;
+            background: #ffffff;
+            color: #263746;
+            cursor: pointer;
+            font: inherit;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .result-summary-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 18px 22px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 18px;
+        }
+
+        .result-big-pct {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--text);
+            min-width: 68px;
+        }
+
+        .result-topic-row {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 14px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .result-topic-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .result-dims-line {
+            font-size: 12px;
+            color: var(--muted);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+        }
+
+        .inline-notice {
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background: var(--surface);
+            font-size: 13px;
+            line-height: 1.5;
+            margin-bottom: 18px;
+        }
+
+        .inline-notice.warn {
+            background: #FEF2F2;
+            border-color: #FECACA;
+            color: #7F1D1D;
+        }
+
+        @media (max-width: 520px) {
+            .account-page {
+                padding: 28px 14px;
+            }
+
+            .account-card {
+                padding: 22px;
+            }
+
+            .nav-label {
+                display: none;
+            }
+
+            .result-summary-card {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+        }
+    </style>
 </head>
 
 <body>
 
-    <!-- ==============================
-         HEADER
-    =============================== -->
+    <!-- HEADER -->
     <header class="navbar">
-        <a href="#" class="logo" onclick="backToDashboard(); return false;">
+        <a href="{{ url_for('home') }}" class="logo">
             Learn<span>ly</span>
         </a>
 
         <span class="nav-label">Personalized Learning</span>
-    </header>
 
+        {% if session.get('user_id') %}
+        <div class="nav-links-cluster">
+            <a href="{{ url_for('module5') }}" class="nav-tab-link">Learning Path</a>
+            <a href="{{ url_for('module3') }}" class="nav-tab-link">Knowledge Graph</a>
+            <a href="{{ url_for('module4') }}" class="nav-tab-link">Skill Gaps</a>
+            <a href="{{ url_for('module6') }}" class="nav-tab-link">My Progress</a>
+            <form class="logout-form" action="{{ url_for('logout') }}" method="POST">
+                <button type="submit" class="logout-button">Log Out</button>
+            </form>
+        </div>
+        {% endif %}
+    </header>
 
     <main>
 
-        <!-- ==============================
-             PAGE 1: DASHBOARD
-        =============================== -->
-        <section id="dashboard-page" class="page active">
+        <!-- PAGE 0: LOGIN / SIGN UP -->
+        <section id="account-page" class="page account-page {% if not session.get('user_id') %}active{% endif %}">
+            <div class="account-container">
+                <div class="account-card">
+
+                    <h1 id="account-heading">Welcome back</h1>
+
+                    <p class="account-description" id="account-description">
+                        Log in to continue your learning journey.
+                    </p>
+
+                    <div class="account-tabs" role="group" aria-label="Account options">
+                        <button type="button" id="login-tab" class="account-tab" aria-pressed="true"
+                            onclick="switchAccountMode('login')">
+                            Login
+                        </button>
+
+                        <button type="button" id="signup-tab" class="account-tab" aria-pressed="false"
+                            onclick="switchAccountMode('signup')">
+                            Sign Up
+                        </button>
+                    </div>
+
+                    {% if error %}
+                    <p class="account-error" role="alert">
+                        {{ error }}
+                    </p>
+                    {% endif %}
+
+                    <!-- LOGIN FORM -->
+                    <form id="login-form" action="{{ url_for('login') }}" method="POST">
+                        <div class="account-field">
+                            <label for="login-email">Email address</label>
+                            <input type="email" id="login-email" name="email" autocomplete="email" maxlength="254"
+                                placeholder="you@example.com" required>
+                        </div>
+
+                        <div class="account-field">
+                            <label for="login-password">Password</label>
+                            <input type="password" id="login-password" name="password" autocomplete="current-password"
+                                placeholder="Enter your password" required>
+                        </div>
+
+                        <button type="submit" class="btn-primary account-submit">
+                            Log In
+                        </button>
+                    </form>
+
+                    <!-- SIGN UP FORM -->
+                    <form id="signup-form" action="{{ url_for('signup') }}" method="POST" class="account-hidden">
+                        <div class="account-field">
+                            <label for="signup-name">Full name</label>
+                            <input type="text" id="signup-name" name="name" autocomplete="name" maxlength="60"
+                                placeholder="Enter your name" required>
+                        </div>
+
+                        <div class="account-field">
+                            <label for="signup-email">Email address</label>
+                            <input type="email" id="signup-email" name="email" autocomplete="email" maxlength="254"
+                                placeholder="you@example.com" required>
+                        </div>
+
+                        <div class="account-field">
+                            <label for="signup-password">Password</label>
+                            <input type="password" id="signup-password" name="password" autocomplete="new-password"
+                                minlength="8" placeholder="At least 8 characters" required>
+                        </div>
+
+                        <button type="submit" class="btn-primary account-submit">
+                            Create Account
+                        </button>
+                    </form>
+
+                    <p class="account-note">
+                        Your account tracks topic mastery, skill gaps, and personalized practice progress.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 1: DASHBOARD -->
+        <section id="dashboard-page" class="page {% if session.get('user_id') %}active{% endif %}">
 
             <div class="page-heading">
-                <p class="eyebrow">YOUR LEARNING SPACE</p>
-
-                <h1>Learning Dashboard</h1>
+                <h1>
+                    Dashboard{% if session.get('user_name') %} &mdash; {{ session.get('user_name') }}{% endif %}
+                </h1>
 
                 <p class="intro">
-                    Choose a subject to begin learning at your own pace.
-                    Learnly will help you understand your current knowledge
-                    before you continue.
+                    Choose a course to take the assessment or continue learning.
                 </p>
             </div>
 
-
-            <!-- My Courses -->
             <section class="section my-courses">
-
                 <div class="section-heading">
                     <h2>My Courses</h2>
-
-                    <p class="muted">
-                        Continue with the courses you have started.
-                    </p>
                 </div>
 
-                <div class="empty-state">
+                {% if user_progress and user_progress.summary.active_courses_count > 0 %}
+                <div class="course-grid">
+                    {% for c in user_progress.courses %}
+                    {% if c.is_active %}
+                    <article class="course-card" style="justify-content: space-between; border-radius: 4px;">
+                        <div style="width: 100%;">
+                            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px;">
+                                <h3 style="margin: 0; font-size: 17px;">{{ c.name }}</h3>
+                                <span style="font-size: 13px; font-weight: 700; color: var(--blue);">{{ c.percentage }}%</span>
+                            </div>
 
-                    <div class="empty-state-icon" aria-hidden="true">
-                        <svg viewBox="0 0 24 24"
-                             fill="none"
-                             stroke="currentColor"
-                             stroke-width="1.5">
-                            <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21z"/>
-                            <path d="M4 5.5v15.5"/>
-                            <path d="M8 7h8"/>
-                            <path d="M8 11h6"/>
-                        </svg>
-                    </div>
+                            <progress class="learnly-progress" max="100" value="{{ c.percentage }}"
+                                aria-label="{{ c.name }} completion progress" style="margin-bottom: 12px;"></progress>
 
-                    <h3>No courses yet</h3>
+                            <p style="font-size: 13px; color: var(--muted); margin-bottom: 6px;">
+                                {{ c.completed_topics }} of {{ c.total_topics }} topics completed
+                            </p>
+                            {% if c.next_focus %}
+                            <p style="font-size: 13px; color: var(--text); margin-bottom: 0;">
+                                Recommended next: <strong>{{ c.next_focus }}</strong>
+                            </p>
+                            {% endif %}
+                        </div>
 
-                    <p>
-                        Your courses will appear here after you start learning.
-                    </p>
-
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px;">
+                            {% if c.next_focus_id %}
+                            <a href="{{ url_for('topic_practice', topic_id=c.next_focus_id, course=c.name) }}"
+                                class="btn-primary" style="min-height: 36px; font-size: 12px; padding: 6px 12px;">
+                                Study Next &rarr;
+                            </a>
+                            {% endif %}
+                            <a href="{{ url_for('module5', course=c.name) }}" class="btn-secondary"
+                                style="min-height: 36px; font-size: 12px; padding: 6px 12px;">
+                                Learning Path
+                            </a>
+                            <a href="{{ url_for('module3', course=c.name) }}" class="btn-secondary"
+                                style="min-height: 36px; font-size: 12px; padding: 6px 12px;">
+                                Knowledge Graph
+                            </a>
+                        </div>
+                    </article>
+                    {% endif %}
+                    {% endfor %}
                 </div>
-
+                {% else %}
+                <div class="empty-state" style="border-radius: 4px;">
+                    <h3>No active courses yet</h3>
+                    <p>Choose a course below to take one quick diagnostic assessment and generate your path.</p>
+                </div>
+                {% endif %}
             </section>
 
-
-            <!-- Explore Courses -->
+            <!-- EXPLORE COURSES -->
+            {% set active_course_names = [] %}
+            {% if user_progress %}
+                {% for uc in user_progress.courses %}
+                    {% if uc.is_active %}
+                        {% set _ = active_course_names.append(uc.name) %}
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+            {% if active_course_names | length < 4 %}
             <section class="section explore-section">
-
                 <div class="section-heading">
                     <h2>Explore Courses</h2>
-
-                    <p class="muted">
-                        Select a subject that matches your learning goal.
-                    </p>
+                    <p class="muted">Select a course to start.</p>
                 </div>
-
 
                 <div class="course-grid">
-
-                    <!-- Python -->
-                    <article class="course-card">
-
-                        <div class="course-icon" aria-hidden="true">
-                            <svg viewBox="0 0 24 24"
-                                 fill="none"
-                                 stroke="currentColor"
-                                 stroke-width="1.6">
-                                <rect x="4" y="4" width="16" height="16" rx="2"/>
-                                <path d="M8 9h3"/>
-                                <path d="M8 13h8"/>
-                                <path d="M8 17h5"/>
-                            </svg>
-                        </div>
-
+                    {% if 'Python Programming' not in active_course_names %}
+                    <article class="course-card" style="border-radius: 4px;">
                         <h3>Python Programming</h3>
-
-                        <p>
-                            Learn programming fundamentals, data types,
-                            conditions, loops, functions, and object-oriented
-                            programming.
-                        </p>
-
-                        <button type="button"
-                                class="btn-primary"
-                                onclick="startCourse('Python Programming')">
+                        <p>Variables, conditions, loops, functions, core collections, and object-oriented Python.</p>
+                        <button type="button" class="btn-primary" onclick="startCourse('Python Programming')">
                             Start Course
                         </button>
-
                     </article>
+                    {% endif %}
 
-
-                    <!-- Data Structures -->
-                    <article class="course-card">
-
-                        <div class="course-icon" aria-hidden="true">
-                            <svg viewBox="0 0 24 24"
-                                 fill="none"
-                                 stroke="currentColor"
-                                 stroke-width="1.6">
-                                <rect x="3" y="4" width="6" height="6" rx="1"/>
-                                <rect x="15" y="4" width="6" height="6" rx="1"/>
-                                <rect x="9" y="15" width="6" height="6" rx="1"/>
-                                <path d="M9 7h6"/>
-                                <path d="M18 10v2.5L12 15"/>
-                                <path d="M6 10v2.5L12 15"/>
-                            </svg>
-                        </div>
-
-                        <h3>Data Structures &amp; Algorithms</h3>
-
-                        <p>
-                            Explore arrays, linked lists, stacks, queues,
-                            trees, graphs, and fundamental algorithms.
-                        </p>
-
-                        <button type="button"
-                                class="btn-primary"
-                                onclick="startCourse('Data Structures & Algorithms')">
+                    {% if 'Data Structures' not in active_course_names %}
+                    <article class="course-card" style="border-radius: 4px;">
+                        <h3>Data Structures</h3>
+                        <p>Arrays, strings, linked lists, stacks, queues, recursion, trees, and graphs.</p>
+                        <button type="button" class="btn-primary" onclick="startCourse('Data Structures')">
                             Start Course
                         </button>
-
                     </article>
+                    {% endif %}
 
-
-                    <!-- Web Development -->
-                    <article class="course-card">
-
-                        <div class="course-icon" aria-hidden="true">
-                            <svg viewBox="0 0 24 24"
-                                 fill="none"
-                                 stroke="currentColor"
-                                 stroke-width="1.6">
-                                <rect x="3" y="4" width="18" height="16" rx="2"/>
-                                <path d="M3 9h18"/>
-                                <path d="M7 6.5h.01"/>
-                                <path d="M10 6.5h.01"/>
-                                <path d="m9 13-3 2 3 2"/>
-                                <path d="m15 13 3 2-3 2"/>
-                            </svg>
-                        </div>
-
-                        <h3>Web Development</h3>
-
-                        <p>
-                            Learn the foundations of HTML, CSS, JavaScript,
-                            and building interactive websites.
-                        </p>
-
-                        <button type="button"
-                                class="btn-primary"
-                                onclick="startCourse('Web Development')">
-                            Start Course
-                        </button>
-
-                    </article>
-
-
-                    <!-- Java -->
-                    <article class="course-card">
-
-                        <div class="course-icon" aria-hidden="true">
-                            <svg viewBox="0 0 24 24"
-                                 fill="none"
-                                 stroke="currentColor"
-                                 stroke-width="1.6">
-                                <path d="M12 3c-2 2-2 3 0 4"/>
-                                <path d="M15 5c-3 3-3 4 0 6"/>
-                                <path d="M6 13h12"/>
-                                <path d="M7 16c3 2 7 2 10 0"/>
-                                <path d="M8 19c2 1 6 1 8 0"/>
-                            </svg>
-                        </div>
-
+                    {% if 'Java Programming' not in active_course_names %}
+                    <article class="course-card" style="border-radius: 4px;">
                         <h3>Java Programming</h3>
-
-                        <p>
-                            Understand Java syntax, variables, control
-                            statements, methods, classes, and objects.
-                        </p>
-
-                        <button type="button"
-                                class="btn-primary"
-                                onclick="startCourse('Java Programming')">
+                        <p>Java syntax, control flow, loops, arrays, classes, inheritance, collections, and exceptions.</p>
+                        <button type="button" class="btn-primary"
+                            onclick="startCourse('Java Programming')">
                             Start Course
                         </button>
-
                     </article>
+                    {% endif %}
 
+                    {% if 'Artificial Intelligence and Machine Learning (AI/ML)' not in active_course_names %}
+                    <article class="course-card" style="border-radius: 4px;">
+                        <h3>Artificial Intelligence &amp; Machine Learning</h3>
+                        <p>Python data logic, math &amp; stats basics, NumPy/Pandas workflows, ML models, and evaluation.</p>
+                        <button type="button" class="btn-primary"
+                            onclick="startCourse('Artificial Intelligence and Machine Learning (AI/ML)')">
+                            Start Course
+                        </button>
+                    </article>
+                    {% endif %}
                 </div>
-
             </section>
-
+            {% endif %}
         </section>
 
-
-
-        <!-- ==============================
-             PAGE 2: COURSE EXPERIENCE SETUP
-        =============================== -->
+        <!-- PAGE 2: COURSE LEVEL SELECTION -->
         <section id="experience-page" class="page">
-
             <div class="experience-container">
-
-                <button type="button"
-                        class="text-button"
-                        onclick="backToDashboard()">
+                <button type="button" class="text-button" onclick="backToDashboard()">
                     &larr; Back to Dashboard
                 </button>
 
-
                 <div class="experience-heading">
-
-                    <p class="eyebrow">COURSE SETUP</p>
-
-                    <h1>Set up your learning experience</h1>
-
-                    <p class="course-name" id="selected-course-name">
-                        Python Programming
-                    </p>
-
+                    <h1>Select Your Level</h1>
+                    <p class="course-name" id="selected-course-name">Python Programming</p>
                 </div>
-
 
                 <div class="level-section">
-
-                    <h2>What is your current experience level?</h2>
-
-                    <p class="muted">
-                        Choose the option that best describes your current
-                        understanding of this subject.
-                    </p>
-
+                    <h2>Experience Level</h2>
 
                     <div class="level-options">
-
-                        <button type="button"
-                                class="level-card"
-                                data-level="Beginner"
-                                aria-pressed="false"
-                                onclick="selectLevel('Beginner')">
-
+                        <button type="button" class="level-card" data-level="Beginner" aria-pressed="false"
+                            onclick="selectLevel('Beginner')" style="border-radius: 4px; padding: 14px 18px;">
                             <span class="level-title">Beginner</span>
-
-                            <span class="level-description">
-                                I am new to this subject or need to strengthen
-                                the basics.
-                            </span>
-
                         </button>
 
-
-                        <button type="button"
-                                class="level-card"
-                                data-level="Intermediate"
-                                aria-pressed="false"
-                                onclick="selectLevel('Intermediate')">
-
+                        <button type="button" class="level-card" data-level="Intermediate" aria-pressed="false"
+                            onclick="selectLevel('Intermediate')" style="border-radius: 4px; padding: 14px 18px;">
                             <span class="level-title">Intermediate</span>
-
-                            <span class="level-description">
-                                I understand the basics and can solve some
-                                problems independently.
-                            </span>
-
                         </button>
 
-
-                        <button type="button"
-                                class="level-card"
-                                data-level="Advanced"
-                                aria-pressed="false"
-                                onclick="selectLevel('Advanced')">
-
+                        <button type="button" class="level-card" data-level="Advanced" aria-pressed="false"
+                            onclick="selectLevel('Advanced')" style="border-radius: 4px; padding: 14px 18px;">
                             <span class="level-title">Advanced</span>
-
-                            <span class="level-description">
-                                I know the core concepts and can solve more
-                                complex problems.
-                            </span>
-
                         </button>
-
                     </div>
 
-
-                    <p id="level-validation"
-                       class="validation-message"
-                       role="alert"
-                       hidden>
-                        Please select your experience level to continue.
+                    <p id="level-validation" class="validation-message" role="alert" hidden>
+                        Please select a level to continue.
                     </p>
-
 
                     <div class="experience-actions">
-
-                        <button type="button"
-                                class="btn-primary"
-                                onclick="continueToInstructions()">
+                        <button type="button" class="btn-primary" onclick="continueToInstructions()">
                             Continue
                         </button>
-
                     </div>
-
                 </div>
-
             </div>
-
         </section>
 
-
-
-        <!-- ==============================
-             PAGE 3: ASSESSMENT INSTRUCTIONS
-        =============================== -->
+        <!-- PAGE 3: ASSESSMENT BRIEF -->
         <section id="instructions-page" class="page">
-
             <div class="assessment-instructions-container">
-
-                <button type="button"
-                        class="text-button"
-                        onclick="backToExperience()">
-                    &larr; Back to Course Setup
+                <button type="button" class="text-button" onclick="backToExperience()">
+                    &larr; Back
                 </button>
-
 
                 <div class="instructions-heading">
-
-                    <p class="eyebrow">KNOWLEDGE ASSESSMENT</p>
-
-                    <h1>Knowledge Assessment</h1>
-
-                    <p class="intro">
-                        Assess your current understanding of
-                        <strong id="instructions-course-name">
-                            Python Programming
-                        </strong>.
-                        Your responses will help identify areas you may need
-                        to strengthen.
-                    </p>
-
+                    <h1>Initial Assessment</h1>
+                    <p class="intro">Course: <strong id="instructions-course-name">Python Programming</strong></p>
                 </div>
 
-
-                <!-- Assessment information -->
-                <div class="question-count-card">
-
-                    <div class="question-count-number">20</div>
-
+                <div class="question-count-card" style="border-radius: 4px;">
+                    <div class="question-count-number" id="instructions-q-count" style="border-radius: 4px;">24</div>
                     <div>
-                        <h2>Questions</h2>
-
-                        <p class="muted">
-                            Multiple-choice assessment
-                        </p>
+                        <h2>Total Questions</h2>
+                        <p class="muted">Multiple choice, output prediction, debug, and coding questions.</p>
                     </div>
-
                 </div>
 
-
-                <!-- Instructions -->
                 <div class="instructions-list">
-
                     <h2>Instructions</h2>
-
                     <ul>
-                        <li>
-                            Select one answer for each question.
-                        </li>
-
-                        <li>
-                            Use Next and Previous to move between questions.
-                        </li>
-
-                        <li>
-                            You can skip a question and return to it later.
-                        </li>
-
-                        <li>
-                            Use the numbered question panel to navigate
-                            directly to a question.
-                        </li>
-
-                        <li>
-                            Review unanswered questions before submitting
-                            your assessment.
-                        </li>
+                        <li>Answer one question at a time.</li>
+                        <li>Use the question numbers on the left to jump to any question.</li>
+                        <li>Click Finish &amp; Analyse when completed.</li>
                     </ul>
-
                 </div>
-
 
                 <div class="instructions-actions">
-
-                    <button type="button"
-                            class="btn-primary"
-                            id="btn-begin-assessment"
-                            onclick="beginAssessment()">
-                        Begin Assessment
+                    <button type="button" class="btn-primary" id="btn-begin-assessment" onclick="beginAssessment()">
+                        Start Assessment
                     </button>
-
                 </div>
-
             </div>
-
         </section>
 
-
-
-        <!-- ==============================
-             PAGE 4: ASSESSMENT QUESTIONS
-        =============================== -->
+        <!-- PAGE 4: ASSESSMENT WITH SIDE QUESTION NAVIGATION -->
         <section id="questions-page" class="page">
-
-            <!-- Assessment heading -->
             <div class="assessment-page-heading">
-
                 <div>
-                    <p class="eyebrow">KNOWLEDGE ASSESSMENT</p>
-
-                    <h1 id="assessment-course-name">
-                        Python Programming
-                    </h1>
+                    <h1 id="assessment-course-name">Python Programming Assessment</h1>
                 </div>
-
-                <p id="question-counter" class="question-counter">
-                    Question 1 of 20
-                </p>
-
+                <p id="question-counter" class="question-counter">Question 1 of 24</p>
             </div>
 
-
-            <!-- Progress -->
-            <div class="assessment-progress">
-
-                <div class="assessment-progress-track"
-                     role="progressbar"
-                     aria-label="Assessment completion"
-                     aria-valuemin="0"
-                     aria-valuemax="20"
-                     aria-valuenow="0"
-                     id="assessment-progress-track">
-
-                    <div id="assessment-progress-fill"></div>
-
-                </div>
-
-                <p id="assessment-progress-text">
-                    0 of 20 answered
-                </p>
-
+            <div class="activity-progress-row">
+                <progress class="learnly-progress" id="assessment-progress-bar" max="100" value="0"
+                    aria-label="Assessment progress"></progress>
+                <span id="assessment-progress-text" class="activity-progress-caption">0 of 24 answered</span>
             </div>
 
-
-            <!-- Main assessment layout -->
             <div class="assessment-layout">
-
-
-                <!-- Question number sidebar -->
-                <aside id="question-sidebar"
-                       class="question-sidebar"
-                       aria-label="Question navigation">
-
+                <!-- SIDE QUESTION NAVIGATOR -->
+                <aside class="question-sidebar" id="question-sidebar" aria-label="Question navigator" style="border-radius: 4px;">
                     <div class="question-sidebar-heading">
-
                         <h2>Questions</h2>
-
-                        <button type="button"
-                                class="panel-toggle"
-                                aria-label="Close question panel"
-                                title="Close question panel"
-                                onclick="toggleQuestionSidebar(false)">
-
-                            <svg viewBox="0 0 24 24"
-                                 fill="none"
-                                 stroke="currentColor"
-                                 stroke-width="1.8">
-                                <path d="m15 18-6-6 6-6"/>
-                            </svg>
-
-                        </button>
-
+                        <button type="button" id="btn-hide-sidebar" class="panel-toggle" title="Hide question list"
+                            aria-expanded="true" onclick="toggleQuestionSidebar(false)">&laquo;</button>
                     </div>
 
-
-                    <div id="question-number-grid"
-                         class="question-number-grid">
-                        <!-- Question numbers are created by JavaScript. -->
-                    </div>
-
+                    <div class="question-number-grid" id="question-number-grid"></div>
 
                     <div class="question-status-legend">
-
-                        <p>
-                            <span class="status-dot status-current"></span>
-                            Current
-                        </p>
-
-                        <p>
-                            <span class="status-dot status-answered"></span>
-                            Answered
-                        </p>
-
-                        <p>
-                            <span class="status-dot status-unanswered"></span>
-                            Unanswered
-                        </p>
-
+                        <p><span class="status-dot status-current"></span> Current</p>
+                        <p><span class="status-dot status-answered"></span> Answered</p>
+                        <p><span class="status-dot status-unanswered"></span> Unanswered</p>
                     </div>
-
                 </aside>
 
+                <button type="button" id="btn-show-sidebar" class="panel-reopen-button" title="Show question list"
+                    aria-expanded="false" onclick="toggleQuestionSidebar(true)" hidden>&raquo;</button>
 
-                <!-- Reopen sidebar button -->
-                <button type="button"
-                        id="open-question-sidebar"
-                        class="panel-reopen-button"
-                        aria-label="Open question panel"
-                        title="Open question panel"
-                        onclick="toggleQuestionSidebar(true)"
-                        hidden>
-
-                    <svg viewBox="0 0 24 24"
-                         fill="none"
-                         stroke="currentColor"
-                         stroke-width="1.8">
-                        <path d="m9 18 6-6-6-6"/>
-                    </svg>
-
-                </button>
-
-
-                <!-- Question content -->
-                <div class="question-content">
-
-                    <div class="question-content-heading">
-
-                        <p class="eyebrow" id="question-label">
-                            QUESTION 1
-                        </p>
-
-                        <h2 id="question-text">
-                            QUESTION
-                        </h2>
-
+                <!-- QUESTION PANEL -->
+                <div class="question-content" style="border-radius: 4px;">
+                    <div class="activity-meta-line">
+                        <span class="activity-topic-name">Topic: <span id="question-topic-label">Topic</span></span>
+                        <span class="activity-type-note" id="question-type-label">Concept Check</span>
                     </div>
 
+                    <h2 id="question-text" class="activity-question-title" tabindex="-1">Question text</h2>
 
-                    <!-- Answer choices -->
-                    <div class="answer-options"
-                         role="group"
-                         aria-label="Answer choices">
+                    <!-- Read-only code block for Predict Output -->
+                    <pre id="question-code-preview" class="code-snippet-box" hidden></pre>
 
-                        <button type="button"
-                                class="answer-option"
-                                data-answer="A"
-                                aria-pressed="false"
-                                onclick="selectAnswer('A')">
-
+                    <!-- Answer Area A: MCQ -->
+                    <div id="area-mcq" class="answer-options" role="group" aria-label="Answer choices" hidden>
+                        <button type="button" class="answer-option" data-answer="A" aria-pressed="false" onclick="selectMcqAnswer('A')">
                             <span class="answer-letter">A</span>
-
+                            <span class="answer-text" id="answer-text-A">Option A</span>
                         </button>
-
-
-                        <button type="button"
-                                class="answer-option"
-                                data-answer="B"
-                                aria-pressed="false"
-                                onclick="selectAnswer('B')">
-
+                        <button type="button" class="answer-option" data-answer="B" aria-pressed="false" onclick="selectMcqAnswer('B')">
                             <span class="answer-letter">B</span>
-
+                            <span class="answer-text" id="answer-text-B">Option B</span>
                         </button>
-
-
-                        <button type="button"
-                                class="answer-option"
-                                data-answer="C"
-                                aria-pressed="false"
-                                onclick="selectAnswer('C')">
-
+                        <button type="button" class="answer-option" data-answer="C" aria-pressed="false" onclick="selectMcqAnswer('C')">
                             <span class="answer-letter">C</span>
-
+                            <span class="answer-text" id="answer-text-C">Option C</span>
                         </button>
-
-
-                        <button type="button"
-                                class="answer-option"
-                                data-answer="D"
-                                aria-pressed="false"
-                                onclick="selectAnswer('D')">
-
+                        <button type="button" class="answer-option" data-answer="D" aria-pressed="false" onclick="selectMcqAnswer('D')">
                             <span class="answer-letter">D</span>
-
+                            <span class="answer-text" id="answer-text-D">Option D</span>
                         </button>
-
                     </div>
 
+                    <!-- Answer Area B: Predict the Output -->
+                    <div id="area-predict" hidden>
+                        <label for="predict-output-input" class="input-label-block">Your expected output</label>
+                        <textarea id="predict-output-input" class="output-answer-input" rows="3"
+                            placeholder="Type the exact output..." autocorrect="off" autocapitalize="none" spellcheck="false"></textarea>
+                    </div>
 
-                    <!-- Previous and Next -->
+                    <!-- Answer Area C: Debug / Write Small Code -->
+                    <div id="area-code" hidden>
+                        <label for="code-editor-input" class="input-label-block" id="code-editor-label">Your code solution</label>
+                        <textarea id="code-editor-input" class="code-editor-input" rows="7"
+                            autocorrect="off" autocapitalize="none" spellcheck="false"></textarea>
+                        <div class="editor-helper-row" id="code-reset-row" hidden>
+                            <button type="button" class="text-link-muted" onclick="resetStarterCode()">Reset starter snippet</button>
+                        </div>
+                    </div>
+
+                    <!-- Footer Navigation -->
                     <div class="question-navigation">
-
-                        <button type="button"
-                                id="btn-previous-question"
-                                class="btn-secondary"
-                                onclick="goToPreviousQuestion()"
-                                disabled>
-                            Previous
+                        <button type="button" id="btn-previous-question" class="btn-secondary" onclick="goToPreviousQuestion()" disabled>
+                            &larr; Previous
                         </button>
 
-                        <button type="button"
-                                id="btn-next-question"
-                                class="btn-primary"
-                                onclick="goToNextQuestion()">
-                            Next
-                        </button>
-
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <button type="button" id="btn-submit-early" class="text-link-muted" onclick="submitAssessment()">
+                                Finish early
+                            </button>
+                            <button type="button" id="btn-next-question" class="btn-primary" onclick="handleNextOrFinish()">
+                                Next &rarr;
+                            </button>
+                        </div>
                     </div>
+                </div>
+            </div>
+        </section>
 
+        <!-- PAGE 5: ASSESSMENT RESULTS & MASTERY BREAKDOWN -->
+        <section id="results-page" class="page">
+            <div class="activity-shell">
+                <div class="instructions-heading" style="margin-top: 0;">
+                    <h1>Assessment Result</h1>
                 </div>
 
+                <div class="result-summary-card">
+                    <div class="result-big-pct" id="result-score-percent">0%</div>
+                    <div>
+                        <h2 id="result-score-headline" style="font-size: 18px; margin-bottom: 4px;">0 of 24 correct</h2>
+                        <p class="muted" id="result-score-summary" style="margin: 0;">Score summary by topic</p>
+                    </div>
+                </div>
+
+                <div id="results-skill-gap-alert" hidden></div>
+
+                <div style="margin-top: 24px;">
+                    <h2 style="font-size: 17px; margin-bottom: 12px;">Breakdown by Topic</h2>
+                    <div id="results-topic-breakdown" style="display: grid; gap: 12px;"></div>
+                </div>
+
+                <div class="instructions-actions" style="margin-top: 28px; display: flex; gap: 12px; flex-wrap: wrap;">
+                    <button type="button" class="btn-primary" id="btn-view-learning-path" onclick="openModule5Path()">
+                        View Learning Path &rarr;
+                    </button>
+                    <button type="button" class="btn-secondary" id="btn-view-skill-gaps" onclick="openModule4Gaps()">
+                        View Skill Gaps
+                    </button>
+                    <button type="button" class="btn-secondary" onclick="openModule3Path()">
+                        Knowledge Graph
+                    </button>
+                    <button type="button" class="btn-secondary" onclick="backToDashboard()">
+                        Dashboard
+                    </button>
+                </div>
             </div>
-
-
-            <!-- Submit -->
-            <div class="assessment-submit-row">
-
-                <button type="button"
-                        id="btn-submit-assessment"
-                        class="btn-secondary"
-                        onclick="submitAssessment()">
-                    Submit Assessment
-                </button>
-
-            </div>
-
         </section>
 
     </main>
 
-
-    <!-- ==============================
-         FOOTER
-    =============================== -->
     <footer>
         <p>Learnly | Personalized Learning</p>
     </footer>
 
-
-
-    <!-- ==============================
-         JAVASCRIPT
-    =============================== -->
     <script>
+        function switchAccountMode(mode) {
+            const loginForm = document.getElementById("login-form");
+            const signupForm = document.getElementById("signup-form");
+            const loginTab = document.getElementById("login-tab");
+            const signupTab = document.getElementById("signup-tab");
+            const isLogin = mode === "login";
 
-        // ----------------------------------
-        // Application state
-        // ----------------------------------
+            loginForm.classList.toggle("account-hidden", !isLogin);
+            signupForm.classList.toggle("account-hidden", isLogin);
+            loginTab.classList.toggle("active", isLogin);
+            signupTab.classList.toggle("active", !isLogin);
+            loginTab.setAttribute("aria-pressed", String(isLogin));
+            signupTab.setAttribute("aria-pressed", String(!isLogin));
 
+            document.getElementById("account-heading").textContent =
+                isLogin ? "Welcome back" : "Create your account";
+            document.getElementById("account-description").textContent =
+                isLogin ? "Log in to continue your learning journey." : "Create an account to get started with Learnly.";
+        }
+
+        const initialAuthMode = {{ auth_mode | default('login') | tojson }};
+        switchAccountMode(initialAuthMode);
+
+        // Assessment State
         let selectedCourse = "";
         let selectedLevel = "";
+        let totalQuestions = 24;
+        let currentQuestionIdx = 0; // 0-based
+        let currentQuestions = [];
+        let answersById = {};
+        let latestAssessmentResult = null;
 
-        const totalQuestions = 20;
-
-        let currentQuestion = 1;
-
-        let answers = Array(totalQuestions).fill("");
-
-
-        // ----------------------------------
-        // Display the selected page
-        // ----------------------------------
-
-        function showPage(pageId) {
-
-            const pages = document.querySelectorAll(".page");
-
-            pages.forEach(function (page) {
-                page.classList.remove("active");
-            });
-
-            const selectedPage = document.getElementById(pageId);
-
-            if (selectedPage) {
-                selectedPage.classList.add("active");
+        function isQuestionAnswered(q) {
+            if (!q) return false;
+            const val = (answersById[q.id] || "").trim();
+            const starter = (q.code_snippet || "").trim();
+            if (q.question_type === "debug_code" || q.question_type === "write_code") {
+                return Boolean(val && val !== starter);
             }
+            return Boolean(val);
+        }
 
-            window.scrollTo({
-                top: 0,
-                behavior: "auto"
+        function toggleQuestionSidebar(show) {
+            const sidebar = document.getElementById("question-sidebar");
+            const reopenBtn = document.getElementById("btn-reopen-sidebar");
+            if (sidebar) sidebar.hidden = !show;
+            if (reopenBtn) reopenBtn.hidden = show;
+        }
+
+        function renderQuestionSidebar() {
+            const grid = document.getElementById("question-number-grid");
+            if (!grid) return;
+            grid.replaceChildren();
+            currentQuestions.forEach((q, idx) => {
+                const btn = document.createElement("button");
+                btn.type = "button";
+                const isCurr = idx === currentQuestionIdx;
+                const isAns = isQuestionAnswered(q);
+                btn.className = "question-number " + (isCurr ? "current" : (isAns ? "answered" : "unanswered"));
+                btn.textContent = String(idx + 1);
+                btn.title = `Question ${idx + 1} - ${q.topic_name || ""}`;
+                btn.setAttribute("aria-label", `Go to question ${idx + 1}: ${q.topic_name || ""}`);
+                if (isCurr) btn.setAttribute("aria-current", "step");
+                btn.addEventListener("click", () => goToQuestion(idx));
+                grid.appendChild(btn);
             });
         }
 
+        function goToQuestion(idx) {
+            saveCurrentInput();
+            if (idx >= 0 && idx < totalQuestions) {
+                currentQuestionIdx = idx;
+                renderCurrentQuestion();
+            }
+        }
 
-        // ----------------------------------
-        // Start a course
-        // ----------------------------------
+        const TYPE_LABELS = {
+            mcq: "Concept Check",
+            predict_output: "Predict Output",
+            debug_code: "Debug the Code",
+            write_code: "Write Small Code",
+        };
+
+        function masteryClass(state) {
+            return String(state || "Unassessed").toLowerCase().replace(/\s+/g, "-");
+        }
+
+        function showPage(pageId) {
+            document.querySelectorAll(".page").forEach((page) => page.classList.remove("active"));
+            const selectedPage = document.getElementById(pageId);
+            if (selectedPage) selectedPage.classList.add("active");
+            window.scrollTo({ top: 0, behavior: "auto" });
+        }
 
         function startCourse(courseName) {
-
             selectedCourse = courseName;
             selectedLevel = "";
+            localStorage.setItem("learnly_selected_course", selectedCourse);
+            document.getElementById("selected-course-name").textContent = selectedCourse;
 
-            document.getElementById("selected-course-name").textContent =
-                selectedCourse;
-
-            document.querySelectorAll(".level-card").forEach(function (card) {
-
+            document.querySelectorAll(".level-card").forEach((card) => {
                 card.classList.remove("selected");
-
                 card.setAttribute("aria-pressed", "false");
-
             });
 
             document.getElementById("level-validation").hidden = true;
-
             showPage("experience-page");
         }
 
-
-        // ----------------------------------
-        // Select experience level
-        // ----------------------------------
-
         function selectLevel(level) {
-
             selectedLevel = level;
-
-            document.querySelectorAll(".level-card").forEach(function (card) {
-
+            document.querySelectorAll(".level-card").forEach((card) => {
                 const isSelected = card.dataset.level === level;
-
                 card.classList.toggle("selected", isSelected);
-
-                card.setAttribute(
-                    "aria-pressed",
-                    String(isSelected)
-                );
-
+                card.setAttribute("aria-pressed", String(isSelected));
             });
-
             document.getElementById("level-validation").hidden = true;
         }
 
-
-        // ----------------------------------
-        // Return to Dashboard
-        // ----------------------------------
-
         function backToDashboard() {
-
+            if (latestAssessmentResult) {
+                window.location.href = "/";
+                return;
+            }
             showPage("dashboard-page");
         }
 
-
-        // ----------------------------------
-        // Continue to instructions
-        // ----------------------------------
-
-        function continueToInstructions() {
-
-            if (!selectedLevel) {
-
-                document.getElementById("level-validation").hidden = false;
-
-                return;
-            }
-
-            document.getElementById("instructions-course-name").textContent =
-                selectedCourse;
-
-            showPage("instructions-page");
-        }
-
-
-        // ----------------------------------
-        // Return to course setup
-        // ----------------------------------
-
         function backToExperience() {
-
             showPage("experience-page");
         }
 
-
-        // ----------------------------------
-        // Begin assessment
-        // ----------------------------------
-
-        function beginAssessment() {
-
-            currentQuestion = 1;
-
-            answers = Array(totalQuestions).fill("");
-
-            document.getElementById("assessment-course-name").textContent =
-                selectedCourse;
-
-            createQuestionNumbers();
-
-            toggleQuestionSidebar(true);
-
-            displayQuestion();
-
-            showPage("questions-page");
-        }
-
-
-        // ----------------------------------
-        // Create question number buttons
-        // ----------------------------------
-
-        function createQuestionNumbers() {
-
-            const grid = document.getElementById("question-number-grid");
-
-            grid.replaceChildren();
-
-            for (let number = 1; number <= totalQuestions; number++) {
-
-                const button = document.createElement("button");
-
-                button.type = "button";
-
-                button.className = "question-number unanswered";
-
-                button.textContent = number;
-
-                button.setAttribute(
-                    "aria-label",
-                    "Go to question " + number
-                );
-
-                button.addEventListener("click", function () {
-
-                    currentQuestion = number;
-
-                    displayQuestion();
-
-                });
-
-                grid.appendChild(button);
+        async function continueToInstructions() {
+            if (!selectedLevel) {
+                document.getElementById("level-validation").hidden = false;
+                return;
             }
-        }
-
-
-        // ----------------------------------
-        // Display the current question
-        // ----------------------------------
-
-        function displayQuestion() {
-
-            document.getElementById("question-counter").textContent =
-                "Question " + currentQuestion + " of " + totalQuestions;
-
-            document.getElementById("question-label").textContent =
-                "QUESTION " + currentQuestion;
-
-            // Placeholder question for mentor review.
-            document.getElementById("question-text").textContent =
-                "QUESTION";
-
-            // Display the previously selected answer, if any.
-            document.querySelectorAll(".answer-option").forEach(function (button) {
-
-                const isSelected =
-                    button.dataset.answer === answers[currentQuestion - 1];
-
-                button.classList.toggle("selected", isSelected);
-
-                button.setAttribute(
-                    "aria-pressed",
-                    String(isSelected)
-                );
-
-            });
-
-            document.getElementById("btn-previous-question").disabled =
-                currentQuestion === 1;
-
-            document.getElementById("btn-next-question").disabled =
-                currentQuestion === totalQuestions;
-
-            updateQuestionStatus();
-        }
-
-
-        // ----------------------------------
-        // Select an answer
-        // ----------------------------------
-
-        function selectAnswer(answer) {
-
-            answers[currentQuestion - 1] = answer;
-
-            displayQuestion();
-        }
-
-
-        // ----------------------------------
-        // Move to the previous question
-        // ----------------------------------
-
-        function goToPreviousQuestion() {
-
-            if (currentQuestion > 1) {
-
-                currentQuestion--;
-
-                displayQuestion();
+            document.getElementById("instructions-course-name").textContent = selectedCourse;
+            try {
+                const res = await fetch(`/api/assessment-questions?course=${encodeURIComponent(selectedCourse)}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.questions && data.questions.length > 0) {
+                        currentQuestions = data.questions;
+                        totalQuestions = data.questions.length;
+                        document.getElementById("instructions-q-count").textContent = totalQuestions;
+                        if (data.course_name) selectedCourse = data.course_name;
+                    }
+                }
+            } catch (e) {
+                console.warn("Preload questions note:", e);
             }
+            showPage("instructions-page");
         }
 
+        async function beginAssessment() {
+            currentQuestionIdx = 0;
+            answersById = {};
 
-        // ----------------------------------
-        // Move to the next question
-        // ----------------------------------
+            document.getElementById("assessment-course-name").textContent = selectedCourse + " Assessment";
 
-        function goToNextQuestion() {
-
-            if (currentQuestion < totalQuestions) {
-
-                currentQuestion++;
-
-                displayQuestion();
-            }
-        }
-
-
-        // ----------------------------------
-        // Update navigation and progress
-        // ----------------------------------
-
-        function updateQuestionStatus() {
-
-            const answeredCount = answers.filter(function (answer) {
-                return answer !== "";
-            }).length;
-
-            const percentage =
-                (answeredCount / totalQuestions) * 100;
-
-            document.getElementById("assessment-progress-fill").style.width =
-                percentage + "%";
-
-            document.getElementById("assessment-progress-text").textContent =
-                answeredCount + " of " + totalQuestions + " answered";
-
-            document.getElementById("assessment-progress-track").setAttribute(
-                "aria-valuenow",
-                answeredCount
-            );
-
-            const questionButtons =
-                document.querySelectorAll(".question-number");
-
-            questionButtons.forEach(function (button, index) {
-
-                const questionNumber = index + 1;
-
-                const isCurrent = questionNumber === currentQuestion;
-
-                const isAnswered = answers[index] !== "";
-
-                button.classList.toggle("current", isCurrent);
-
-                button.classList.toggle(
-                    "answered",
-                    isAnswered && !isCurrent
-                );
-
-                button.classList.toggle(
-                    "unanswered",
-                    !isAnswered && !isCurrent
-                );
-
-                button.setAttribute(
-                    "aria-current",
-                    isCurrent ? "step" : "false"
-                );
-
-            });
-        }
-
-
-        // ----------------------------------
-        // Open or close the question sidebar
-        // ----------------------------------
-
-        function toggleQuestionSidebar(open) {
-
-            const sidebar = document.getElementById("question-sidebar");
-
-            const reopenButton =
-                document.getElementById("open-question-sidebar");
-
-            sidebar.hidden = !open;
-
-            reopenButton.hidden = open;
-        }
-
-
-        // ----------------------------------
-        // Submit assessment
-        // ----------------------------------
-
-        function submitAssessment() {
-
-            const answeredCount = answers.filter(function (answer) {
-                return answer !== "";
-            }).length;
-
-            const unansweredCount = totalQuestions - answeredCount;
-
-            let message =
-                "You have answered " + answeredCount +
-                " out of " + totalQuestions + " questions.";
-
-            if (unansweredCount > 0) {
-
-                message += "\n\n" + unansweredCount +
-                    " question(s) are unanswered.";
-
-                message += "\n\nDo you want to submit anyway?";
-
-            } else {
-
-                message += "\n\nAre you sure you want to submit?";
+            if (!currentQuestions || currentQuestions.length === 0) {
+                try {
+                    const res = await fetch(`/api/assessment-questions?course=${encodeURIComponent(selectedCourse)}`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        currentQuestions = data.questions || [];
+                        totalQuestions = currentQuestions.length;
+                        if (data.course_name) selectedCourse = data.course_name;
+                    }
+                } catch (err) {
+                    console.error("Failed loading questions:", err);
+                }
             }
 
-            const confirmed = window.confirm(message);
-
-            if (!confirmed) {
+            if (!currentQuestions || currentQuestions.length === 0) {
+                alert("Could not load assessment questions for this course. Please try again.");
+                showPage("dashboard-page");
                 return;
             }
 
-            window.alert(
-                
-                "Your answers have not been saved, and no score has been " +
-                "calculated. Backend assessment processing will be added later."
-            );
+            // Pre-populate starter code for debug/write tasks cleanly
+            currentQuestions.forEach((q) => {
+                if ((q.question_type === "debug_code" || q.question_type === "write_code") && q.code_snippet) {
+                    answersById[q.id] = q.code_snippet;
+                }
+            });
+
+            toggleQuestionSidebar(true);
+            renderCurrentQuestion();
+            showPage("questions-page");
         }
 
+        function saveCurrentInput() {
+            const q = currentQuestions[currentQuestionIdx];
+            if (!q) return;
+            if (q.question_type === "predict_output") {
+                answersById[q.id] = document.getElementById("predict-output-input").value;
+            } else if (q.question_type === "debug_code" || q.question_type === "write_code") {
+                answersById[q.id] = document.getElementById("code-editor-input").value;
+            }
+        }
+
+        function renderCurrentQuestion() {
+            const q = currentQuestions[currentQuestionIdx];
+            if (!q) return;
+
+            const stepNum = currentQuestionIdx + 1;
+            document.getElementById("question-counter").textContent = `Question ${stepNum} of ${totalQuestions}`;
+            document.getElementById("question-topic-label").textContent = q.topic_name || "Course Topic";
+            document.getElementById("question-type-label").textContent = TYPE_LABELS[q.question_type] || "Question";
+
+            const heading = document.getElementById("question-text");
+            heading.textContent = q.text;
+
+            const previewBox = document.getElementById("question-code-preview");
+            const areaMcq = document.getElementById("area-mcq");
+            const areaPredict = document.getElementById("area-predict");
+            const areaCode = document.getElementById("area-code");
+            const resetRow = document.getElementById("code-reset-row");
+
+            previewBox.hidden = true;
+            areaMcq.hidden = true;
+            areaPredict.hidden = true;
+            areaCode.hidden = true;
+            resetRow.hidden = true;
+
+            if (q.question_type === "mcq") {
+                areaMcq.hidden = false;
+                document.getElementById("answer-text-A").textContent = q.options.A;
+                document.getElementById("answer-text-B").textContent = q.options.B;
+                document.getElementById("answer-text-C").textContent = q.options.C;
+                document.getElementById("answer-text-D").textContent = q.options.D;
+
+                const savedChoice = answersById[q.id] || "";
+                document.querySelectorAll(".answer-option").forEach((btn) => {
+                    const isSel = btn.dataset.answer === savedChoice;
+                    btn.classList.toggle("selected", isSel);
+                    btn.setAttribute("aria-pressed", String(isSel));
+                });
+            } else if (q.question_type === "predict_output") {
+                if (q.code_snippet) {
+                    previewBox.textContent = q.code_snippet;
+                    previewBox.hidden = false;
+                }
+                areaPredict.hidden = false;
+                const predInput = document.getElementById("predict-output-input");
+                predInput.value = answersById[q.id] || "";
+            } else {
+                areaCode.hidden = false;
+                const codeLabel = document.getElementById("code-editor-label");
+                codeLabel.textContent = q.question_type === "debug_code"
+                    ? `Fix the bug (${q.language === 'java' ? 'Java' : 'Python'}):`
+                    : `Write your small solution (${q.language === 'java' ? 'Java' : 'Python'}):`;
+                const editor = document.getElementById("code-editor-input");
+                editor.value = answersById[q.id] !== undefined ? answersById[q.id] : (q.code_snippet || "");
+                resetRow.hidden = !q.code_snippet;
+            }
+
+            // Buttons, Progress bar & Side Navigation
+            document.getElementById("btn-previous-question").disabled = currentQuestionIdx === 0;
+            const nextBtn = document.getElementById("btn-next-question");
+            if (stepNum === totalQuestions) {
+                nextBtn.textContent = "Finish & Analyse";
+            } else {
+                nextBtn.textContent = "Next \u2192";
+            }
+
+            updateProgressBar();
+        }
+
+        function updateProgressBar() {
+            let answeredCount = 0;
+            currentQuestions.forEach((q) => {
+                if (isQuestionAnswered(q)) answeredCount++;
+            });
+
+            const pct = totalQuestions > 0 ? Math.round(((currentQuestionIdx + 1) / totalQuestions) * 100) : 0;
+            document.getElementById("assessment-progress-bar").value = pct;
+            document.getElementById("assessment-progress-text").textContent =
+                `${answeredCount} of ${totalQuestions} answered`;
+            renderQuestionSidebar();
+        }
+
+        function selectMcqAnswer(letter) {
+            const q = currentQuestions[currentQuestionIdx];
+            if (!q) return;
+            answersById[q.id] = letter;
+            renderCurrentQuestion();
+        }
+
+        function resetStarterCode() {
+            const q = currentQuestions[currentQuestionIdx];
+            if (!q) return;
+            answersById[q.id] = q.code_snippet || "";
+            document.getElementById("code-editor-input").value = answersById[q.id];
+            updateProgressBar();
+        }
+
+        document.getElementById("predict-output-input").addEventListener("input", () => {
+            saveCurrentInput();
+            updateProgressBar();
+        });
+        document.getElementById("code-editor-input").addEventListener("input", () => {
+            saveCurrentInput();
+            updateProgressBar();
+        });
+
+        function goToPreviousQuestion() {
+            saveCurrentInput();
+            if (currentQuestionIdx > 0) {
+                currentQuestionIdx--;
+                renderCurrentQuestion();
+            }
+        }
+
+        function handleNextOrFinish() {
+            saveCurrentInput();
+            if (currentQuestionIdx < totalQuestions - 1) {
+                currentQuestionIdx++;
+                renderCurrentQuestion();
+            } else {
+                submitAssessment();
+            }
+        }
+
+        async function submitAssessment() {
+            saveCurrentInput();
+
+            const nextBtn = document.getElementById("btn-next-question");
+            const earlyBtn = document.getElementById("btn-submit-early");
+            nextBtn.disabled = true;
+            earlyBtn.disabled = true;
+            nextBtn.textContent = "Evaluating...";
+
+            try {
+                const res = await fetch("/api/assessment-submit", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        course_name: selectedCourse,
+                        answers: answersById,
+                        experience_level: selectedLevel,
+                        learning_goal: selectedLevel,
+                    }),
+                });
+
+                nextBtn.disabled = false;
+                earlyBtn.disabled = false;
+                nextBtn.textContent = currentQuestionIdx === totalQuestions - 1 ? "Finish & Analyse" : "Next \u2192";
+
+                if (!res.ok) {
+                    alert("Could not evaluate assessment. Please try again.");
+                    return;
+                }
+
+                const data = await res.json();
+                latestAssessmentResult = data;
+                displayAssessmentResults(data);
+                showPage("results-page");
+            } catch (err) {
+                nextBtn.disabled = false;
+                earlyBtn.disabled = false;
+                nextBtn.textContent = "Next \u2192";
+                console.error("Submission failed:", err);
+                alert("Network error submitting assessment.");
+            }
+        }
+
+        function displayAssessmentResults(data) {
+            document.getElementById("result-score-percent").textContent = `${data.overall_percentage}%`;
+            document.getElementById("result-score-headline").textContent =
+                `${data.total_correct} of ${data.total_questions} tasks passed`;
+
+            const gapAlertEl = document.getElementById("results-skill-gap-alert");
+            const summary = (data.skill_gaps && data.skill_gaps.summary) || {};
+            const needsCount = (summary.needs_attention_count || 0) + (summary.developing_count || 0);
+            const verifiedCount = summary.verified_mastery_count || 0;
+            const missingSkills = summary.missing_skills || [];
+
+            gapAlertEl.hidden = false;
+            if (missingSkills.length > 0 || needsCount > 0) {
+                gapAlertEl.className = "inline-notice warn";
+                gapAlertEl.textContent = missingSkills.length > 0
+                    ? `${needsCount} topic(s) need practice. Focus first on foundational prerequisite(s): ${missingSkills.join(", ")}.`
+                    : `${needsCount} topic(s) need targeted practice. ${verifiedCount} topic(s) already reached Verified Mastery and will be skipped on your path.`;
+            } else {
+                gapAlertEl.className = "inline-notice";
+                gapAlertEl.textContent = `Verified Mastery across ${verifiedCount} topic(s)! Your learning path has been updated accordingly.`;
+            }
+
+            const container = document.getElementById("results-topic-breakdown");
+            container.replaceChildren();
+
+            const topicScores = data.topic_scores || {};
+            Object.values(topicScores).forEach((item) => {
+                const row = document.createElement("article");
+                row.className = "result-topic-row";
+
+                const top = document.createElement("div");
+                top.className = "result-topic-top";
+
+                const title = document.createElement("strong");
+                title.style.fontSize = "15px";
+                title.textContent = item.topic_name;
+
+                const stateSpan = document.createElement("span");
+                stateSpan.className = `mastery-text ${masteryClass(item.mastery_state)}`;
+                stateSpan.textContent = item.mastery_state || item.knowledge_level;
+
+                top.appendChild(title);
+                top.appendChild(stateSpan);
+
+                const dims = item.dimensions || {};
+                const dimLine = document.createElement("div");
+                dimLine.className = "result-dims-line";
+                const fmtDim = (v) => v === null || v === undefined ? "—" : `${v}%`;
+                dimLine.textContent =
+                    `Concepts: ${fmtDim(dims.conceptual)}  ·  Code Output: ${fmtDim(dims.comprehension)}  ·  Coding & Debug: ${fmtDim(dims.practical)}  ·  Mastery Index: ${item.mastery_score ?? item.score_percentage}%`;
+
+                const rec = document.createElement("p");
+                rec.className = "muted";
+                rec.style.margin = "0";
+                rec.style.fontSize = "13px";
+                rec.textContent = item.recommendation || "";
+
+                row.appendChild(top);
+                row.appendChild(dimLine);
+                if (item.recommendation) row.appendChild(rec);
+                container.appendChild(row);
+            });
+        }
+
+        function openModule5Path() {
+            const course = (latestAssessmentResult && latestAssessmentResult.course_name) || selectedCourse || "Python Programming";
+            const goal = (latestAssessmentResult && latestAssessmentResult.learning_goal) || selectedLevel || "Intermediate";
+            window.location.href = `/module5?course=${encodeURIComponent(course)}&goal=${encodeURIComponent(goal)}`;
+        }
+
+        function openModule4Gaps() {
+            const course = (latestAssessmentResult && latestAssessmentResult.course_name) || selectedCourse || "Python Programming";
+            window.location.href = `/module4?course=${encodeURIComponent(course)}`;
+        }
+
+        function openModule3Path() {
+            const course = (latestAssessmentResult && latestAssessmentResult.course_name) || selectedCourse || "Python Programming";
+            window.location.href = `/module3?course=${encodeURIComponent(course)}`;
+        }
     </script>
 
 </body>

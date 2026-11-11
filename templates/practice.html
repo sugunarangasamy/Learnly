@@ -1,0 +1,1413 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learnly | {{ ctx.topic.name ~ ' - Study' if ctx else 'Study' }}</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        .study-container {
+            max-width: 1020px;
+            margin: 0 auto;
+        }
+
+        .study-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .prereq-warn-box {
+            background: #FEF2F2;
+            border: 1px solid #FECACA;
+            border-radius: 4px;
+            padding: 12px 14px;
+            margin-bottom: 18px;
+            font-size: 13px;
+            color: #7F1D1D;
+        }
+
+        .subtopic-preview-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin: 12px 0 20px;
+        }
+
+        .subtopic-preview-btn {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            width: 100%;
+            padding: 12px 14px;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text);
+            text-align: left;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .subtopic-preview-btn:hover {
+            background: var(--surface);
+            border-color: var(--blue);
+        }
+
+        .subtopic-preview-btn.studied {
+            background: #F4F9F5;
+            border-color: #B7DEC2;
+        }
+
+        .subtopic-preview-title {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .subtopic-preview-action {
+            font-size: 12px;
+            font-weight: 600;
+            color: #0f766e;
+            flex-shrink: 0;
+        }
+
+        .subtopic-preview-btn.studied .subtopic-preview-action {
+            color: #15803d;
+        }
+
+        .overview-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding-top: 8px;
+        }
+
+        .study-layout {
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+        }
+
+        .study-sidebar {
+            width: 270px;
+            flex: 0 0 270px;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 16px;
+        }
+
+        .study-sidebar h2 {
+            font-size: 15px;
+            font-weight: 700;
+            margin: 0 0 12px;
+            color: var(--text);
+        }
+
+        .subtopic-nav-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .subtopic-nav-btn {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            width: 100%;
+            padding: 9px 10px;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text);
+            text-align: left;
+            font-size: 13px;
+            line-height: 1.4;
+            cursor: pointer;
+        }
+
+        .subtopic-nav-btn:hover {
+            background: var(--surface);
+        }
+
+        .subtopic-nav-btn.studied {
+            background: #F4F9F5;
+            border-color: #B7DEC2;
+            color: #205B3B;
+        }
+
+        .subtopic-nav-btn.current {
+            background: #E7F8F8;
+            border-color: #168E96;
+            color: var(--text);
+            font-weight: 700;
+        }
+
+        .study-content {
+            flex: 1;
+            min-width: 0;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 24px;
+        }
+
+        .subtopic-step-meta {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        .subtopic-heading {
+            font-size: 21px;
+            font-weight: 700;
+            color: var(--text);
+            margin: 0 0 14px;
+        }
+
+        .study-paragraphs {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--text);
+            margin-bottom: 16px;
+        }
+
+        .study-paragraphs p {
+            margin: 0;
+        }
+
+        .study-subhead {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text);
+            margin: 16px 0 8px;
+        }
+
+        .study-list {
+            padding-left: 20px;
+            margin: 0 0 16px;
+            color: var(--text);
+            font-size: 14px;
+            line-height: 1.65;
+        }
+
+        .study-list li {
+            margin-bottom: 5px;
+        }
+
+        .references-box {
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid #EEF2F6;
+        }
+
+        .reference-list {
+            list-style: none;
+            padding: 0;
+            margin: 8px 0 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .reference-item {
+            padding: 10px 12px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .reference-link {
+            font-weight: 600;
+            color: #0f766e;
+            text-decoration: none;
+        }
+
+        .reference-link:hover {
+            text-decoration: underline;
+        }
+
+        .reference-source {
+            font-size: 12px;
+            color: var(--muted);
+            margin-left: 6px;
+        }
+
+        .reference-note {
+            margin: 4px 0 0;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .study-footer-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid #EEF2F6;
+        }
+
+        .q-type-pill {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: #0f766e;
+            background: #E7F8F8;
+            border: 1px solid #BAE6E8;
+            padding: 3px 8px;
+            border-radius: 3px;
+            margin-bottom: 8px;
+        }
+
+        .validation-banner {
+            background: #FEF2F2;
+            border: 1px solid #FECACA;
+            border-radius: 4px;
+            padding: 10px 14px;
+            margin-top: 16px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #991B1B;
+        }
+
+        .result-banner {
+            border-radius: 4px;
+            padding: 20px 24px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+            background: var(--white);
+        }
+
+        .result-banner.passed {
+            background: #F4FBF6;
+            border-color: #B7DEC2;
+        }
+
+        .result-banner.failed {
+            background: #FEF8F8;
+            border-color: #FECACA;
+        }
+
+        .result-score-row {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .weak-concept-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 10px 0 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .weak-concept-chip {
+            font-size: 12px;
+            font-weight: 600;
+            color: #991B1B;
+            background: #FFFFFF;
+            border: 1px solid #FCA5A5;
+            border-radius: 4px;
+            padding: 4px 10px;
+        }
+
+        .revise-btn-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .incorrect-item-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 16px 18px;
+            margin-bottom: 12px;
+        }
+
+        .incorrect-answer-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            margin: 12px 0;
+        }
+
+        .answer-box {
+            padding: 10px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            overflow-x: auto;
+        }
+
+        .answer-box.student {
+            background: #FEF2F2;
+            border-color: #FECACA;
+        }
+
+        .answer-box.correct {
+            background: #F4FBF6;
+            border-color: #B7DEC2;
+        }
+
+        .answer-box pre {
+            margin: 6px 0 0;
+            font-family: Consolas, "Courier New", monospace;
+            font-size: 12.5px;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        @media (max-width: 760px) {
+            .study-layout {
+                flex-direction: column;
+            }
+            .study-sidebar {
+                width: 100%;
+                flex: auto;
+            }
+            .study-content {
+                width: 100%;
+                padding: 18px 16px;
+            }
+            .incorrect-answer-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="navbar">
+        <a href="{{ url_for('home') }}" class="logo">Learn<span>ly</span></a>
+
+        <div class="nav-links-cluster">
+            <a href="{{ url_for('module5', course=course) }}" class="nav-tab-link">Learning Path</a>
+            <a href="{{ url_for('module3', course=course) }}" class="nav-tab-link">Knowledge Graph</a>
+            <a href="{{ url_for('module4', course=course) }}" class="nav-tab-link">Skill Gaps</a>
+            <a href="{{ url_for('module6') }}" class="nav-tab-link">My Progress</a>
+            <a href="{{ url_for('home') }}" class="nav-tab-link">&larr; Dashboard</a>
+        </div>
+    </header>
+
+    <main>
+        {% if ctx %}
+        {% set t = ctx.topic %}
+        {% set ts = ctx.topic_state %}
+        {% set notes = ctx.study_notes %}
+        {% set subtopics = notes.subtopics or [] %}
+        {% set refs = notes.references or [] %}
+
+        <div class="study-container">
+            <div style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <a href="{{ url_for('module5', course=ctx.course_name) }}" class="text-button" style="text-decoration: none;">
+                    &larr; Back to Learning Path
+                </a>
+                <span style="font-size: 13px; color: var(--muted);">
+                    {{ ctx.course_name }} &middot;
+                    Status: <strong id="topic-status-display" class="status-label {{ ts.status | lower | replace(' ', '-') }}">{{ ts.status }}</strong>
+                    <span id="topic-mastery-wrap" {% if not ts.mastery_state or ts.mastery_state == 'Unassessed' %}hidden{% endif %}>
+                        &middot; Mastery: <strong id="topic-mastery-display">{{ ts.mastery_state }}</strong>
+                    </span>
+                </span>
+            </div>
+
+            <!-- STAGE 1: TOPIC OVERVIEW & TOPICS TO STUDY LIST -->
+            <section id="stage-overview">
+                <div class="study-card">
+                    <h1 style="font-size: 24px; font-weight: 700; margin: 0 0 8px;">{{ t.name }}</h1>
+                    <p style="font-size: 14px; color: var(--muted); margin: 0 0 16px;">
+                        {{ notes.summary }}
+                    </p>
+
+                    {% if ts.missing_prerequisites %}
+                    <div class="prereq-warn-box">
+                        Note: Recommended prerequisites not completed yet: <strong>{{ ts.missing_prerequisites | join(', ') }}</strong>.
+                    </div>
+                    {% endif %}
+
+                    <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px;">
+                        <h2 style="font-size: 16px; font-weight: 700; margin: 0;">Topics to Study ({{ subtopics | length }})</h2>
+                        <span id="overview-study-progress" class="muted" style="font-size: 13px; font-weight: 600;">
+                            0 of {{ subtopics | length }} studied
+                        </span>
+                    </div>
+                    <p class="muted" style="margin: 4px 0 10px;">Select each subtopic below to study it. Once all subtopics are studied, the Mastery Assessment unlocks.</p>
+
+                    <div class="subtopic-preview-list" id="subtopic-preview-list">
+                        {% for sub in subtopics %}
+                        <button type="button" class="subtopic-preview-btn" data-sub-idx="{{ loop.index0 }}" onclick="openSubtopic({{ loop.index0 }})">
+                            <span class="subtopic-preview-title">{{ loop.index }}. {{ sub.title }}</span>
+                            <span class="subtopic-preview-action">Open &rarr;</span>
+                        </button>
+                        {% endfor %}
+                    </div>
+
+                    <div class="overview-actions">
+                        <span id="overview-mastery-hint" class="muted" style="font-size: 13px;">
+                            Study all {{ subtopics | length }} subtopics to unlock Start Mastery Assessment.
+                        </span>
+                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-left: auto;">
+                            <button type="button" class="btn-secondary" id="btn-study-topic" onclick="openFirstUnstudied()">
+                                Study &rarr;
+                            </button>
+                            <button type="button" class="btn-primary" id="btn-start-mastery-assessment" onclick="startMasteryAssessment(false)" hidden>
+                                Start Mastery Assessment
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {% if refs %}
+                <div class="study-card">
+                    <h2 style="font-size: 16px; font-weight: 700; margin: 0 0 4px;">References</h2>
+                    <p class="muted" style="margin: 0 0 10px;">Documentation and recommended study materials for {{ t.name }}.</p>
+                    <ul class="reference-list">
+                        {% for ref in refs %}
+                        <li class="reference-item">
+                            <a href="{{ ref.url }}" target="_blank" rel="noopener noreferrer" class="reference-link">{{ ref.title }}</a>
+                            <span class="reference-source">({{ ref.source }})</span>
+                            {% if ref.note %}
+                            <p class="reference-note">{{ ref.note }}</p>
+                            {% endif %}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+            </section>
+
+            <!-- STAGE 2: INDIVIDUAL SUBTOPIC STUDY WORKSPACE -->
+            <section id="stage-study" hidden>
+                <div class="activity-top-bar">
+                    <div>
+                        <button type="button" class="text-button" onclick="showOverview()" style="padding: 0 0 4px; display: block;">
+                            &larr; All Topics to Study
+                        </button>
+                        <h1 style="font-size: 22px; margin: 0;">{{ t.name }}</h1>
+                    </div>
+                    <p id="subtopic-counter" class="question-counter" style="margin: 0;">Subtopic 1 of {{ subtopics | length }}</p>
+                </div>
+
+                <div class="activity-progress-row">
+                    <progress class="learnly-progress" id="study-progress-bar" max="100" value="0" aria-label="Study progress"></progress>
+                    <span id="study-progress-caption" class="activity-progress-caption">0 of {{ subtopics | length }} studied</span>
+                </div>
+
+                <div class="study-layout">
+                    <!-- LEFT SIDEBAR: SUBTOPICS -->
+                    <aside class="study-sidebar" aria-label="Topics to Study">
+                        <h2>Topics to Study</h2>
+                        <div class="subtopic-nav-list" id="subtopic-nav-list"></div>
+                    </aside>
+
+                    <!-- RIGHT PANEL: LEARNING CONTENT & REFERENCES -->
+                    <article class="study-content">
+                        <div class="subtopic-step-meta" id="sub-step-label">Subtopic 1</div>
+                        <h2 id="sub-title" class="subtopic-heading" tabindex="-1">Subtopic Title</h2>
+
+                        <div id="sub-paragraphs" class="study-paragraphs"></div>
+
+                        <div id="sub-keypoints-wrap" hidden>
+                            <h3 class="study-subhead">Key Points</h3>
+                            <ul id="sub-keypoints" class="study-list"></ul>
+                        </div>
+
+                        <div id="sub-example-wrap" hidden>
+                            <h3 class="study-subhead">Example</h3>
+                            <pre id="sub-example" class="code-snippet-box"></pre>
+                        </div>
+
+                        <div class="references-box" id="sub-refs-wrap" hidden>
+                            <h3 class="study-subhead" style="margin-top: 0;">References</h3>
+                            <ul id="sub-refs-list" class="reference-list"></ul>
+                        </div>
+
+                        <div class="study-footer-nav">
+                            <button type="button" id="btn-sub-prev" class="btn-secondary" onclick="prevSubtopic()" disabled>
+                                &larr; Previous
+                            </button>
+
+                            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                                <button type="button" id="btn-study-start-assessment" class="btn-primary" onclick="startMasteryAssessment(false)" hidden>
+                                    Start Mastery Assessment
+                                </button>
+                                <button type="button" id="btn-sub-next" class="btn-secondary" onclick="nextSubtopic()">
+                                    Next &rarr;
+                                </button>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+            <!-- STAGE 3: 5-QUESTION TOPIC MASTERY ASSESSMENT -->
+            <section id="stage-assessment" hidden aria-label="Topic Mastery Assessment">
+                <div class="activity-top-bar">
+                    <div>
+                        <button type="button" class="text-button" onclick="showOverview()" style="padding: 0 0 4px; display: block;">
+                            &larr; Back to Topic Overview
+                        </button>
+                        <h1 style="font-size: 22px; margin: 0;">Mastery Assessment: {{ t.name }}</h1>
+                        <p class="muted" style="margin: 4px 0 0; font-size: 13px;">
+                            5 questions (1 mark each) &middot; Score at least 4 / 5 (80%) to mark this topic Completed.
+                        </p>
+                    </div>
+                    <p id="mastery-question-counter" class="question-counter" style="margin: 0;">Question 1 of 5</p>
+                </div>
+
+                <div class="activity-progress-row">
+                    <progress class="learnly-progress" id="mastery-progress-bar" max="5" value="0" aria-label="Assessment completion"></progress>
+                    <span id="mastery-progress-caption" class="activity-progress-caption">0 of 5 answered</span>
+                </div>
+
+                <div class="assessment-layout">
+                    <aside class="question-sidebar" aria-label="Question navigator">
+                        <div class="question-sidebar-heading">
+                            <h2>Questions</h2>
+                        </div>
+                        <div class="question-number-grid" id="mastery-nav-grid" role="navigation" aria-label="Question numbers"></div>
+                        <div class="question-status-legend">
+                            <p><span class="status-dot status-current"></span> Current</p>
+                            <p><span class="status-dot status-answered"></span> Answered</p>
+                            <p><span class="status-dot status-unanswered"></span> Unanswered</p>
+                        </div>
+                    </aside>
+
+                    <div class="question-content">
+                        <div class="question-content-heading">
+                            <span class="q-type-pill" id="mastery-q-type-label">Multiple Choice</span>
+                            <h2 id="mastery-q-text">Loading question...</h2>
+                        </div>
+
+                        <div id="mastery-q-body"></div>
+
+                        <div id="mastery-form-error" class="validation-banner" role="alert" hidden></div>
+
+                        <div class="question-navigation">
+                            <button type="button" id="btn-mastery-prev" class="btn-secondary" onclick="prevMasteryQuestion()" disabled>
+                                &larr; Previous
+                            </button>
+                            <button type="button" id="btn-mastery-next" class="btn-secondary" onclick="nextMasteryQuestion()">
+                                Next Question &rarr;
+                            </button>
+                        </div>
+
+                        <div class="assessment-submit-row" style="margin-bottom: 0;">
+                            <button type="button" id="btn-submit-mastery-assessment" class="btn-primary" onclick="submitMasteryAssessment()">
+                                Submit Assessment
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- STAGE 4: MASTERY ASSESSMENT RESULT -->
+            <section id="stage-assessment-result" hidden aria-label="Mastery Assessment Result">
+                <div id="result-summary-banner" class="result-banner">
+                    <div class="result-score-row">
+                        <div>
+                            <h1 id="result-heading" style="font-size: 22px; margin: 0 0 4px;">Mastery Assessment Result</h1>
+                            <p id="result-subtitle" style="margin: 0; font-size: 14px; color: var(--muted);"></p>
+                        </div>
+                        <div style="text-align: right;">
+                            <strong id="result-score-text" style="font-size: 24px; color: var(--text);">0 / 5</strong>
+                            <div id="result-badge-line" style="font-size: 13px; font-weight: 700; margin-top: 2px;"></div>
+                        </div>
+                    </div>
+
+                    <p id="result-unlock-note" style="margin: 10px 0 0; font-size: 13px; font-weight: 600; color: #15803d;" hidden></p>
+                    <p id="result-guest-note" style="margin: 10px 0 0; font-size: 13px; color: var(--muted);" hidden>
+                        Log in or register on the Dashboard to save completion status to your account.
+                    </p>
+                </div>
+
+                <!-- Weak Concepts & Subtopics to Revise (shown when score < 5 or failed) -->
+                <div id="result-revision-box" class="study-card" hidden>
+                    <h2 style="font-size: 16px; font-weight: 700; margin: 0 0 8px;">Concepts &amp; Subtopics to Revise</h2>
+                    <div id="result-weak-concepts-wrap" hidden>
+                        <p class="muted" style="margin: 0; font-size: 13px;">Weak concepts identified:</p>
+                        <ul id="result-weak-concepts" class="weak-concept-list"></ul>
+                    </div>
+
+                    <div id="result-subtopics-wrap" style="margin-top: 14px;" hidden>
+                        <p class="muted" style="margin: 0; font-size: 13px;">Recommended subtopics to review before retaking:</p>
+                        <div id="result-revise-buttons" class="revise-btn-list"></div>
+                    </div>
+                </div>
+
+                <!-- Incorrect Question Review -->
+                <div id="result-incorrect-wrap" hidden>
+                    <h2 style="font-size: 16px; font-weight: 700; margin: 0 0 10px;">Question Review</h2>
+                    <div id="result-incorrect-list"></div>
+                </div>
+
+                <!-- Post-Result Actions -->
+                <div class="study-card" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button type="button" id="btn-retake-mastery-assessment" class="btn-primary" onclick="startMasteryAssessment(true)" hidden>
+                            Retake Assessment
+                        </button>
+                        <button type="button" class="btn-secondary" onclick="openFirstUnstudied()">
+                            Review Study Materials
+                        </button>
+                    </div>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <a id="result-link-path" href="{{ url_for('module5', course=ctx.course_name) }}" class="btn-secondary">Learning Path</a>
+                        <a href="{{ url_for('module3', course=ctx.course_name) }}" class="btn-secondary">Knowledge Graph</a>
+                        <a id="result-link-progress" href="{{ url_for('module6') }}" class="btn-secondary">My Progress</a>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        {% else %}
+        <div class="clean-panel">
+            <h2>Topic not found</h2>
+            <p class="muted">Select a topic from your learning path to study.</p>
+            <a href="{{ url_for('module5') }}" class="btn-primary" style="margin-top: 12px;">Go to Learning Path</a>
+        </div>
+        {% endif %}
+    </main>
+
+    <footer>
+        <p>Learnly</p>
+    </footer>
+
+    {% if ctx %}
+    <script>
+        const studyTopicId = {{ ctx.topic.id | tojson }};
+        const subtopicsData = {{ ctx.study_notes.subtopics | default([]) | tojson }};
+        const topicFallbackRefs = {{ ctx.study_notes.references | default([]) | tojson }};
+        const initialSubtopicArg = {{ initial_subtopic | default('') | tojson }};
+        const initialStudiedSlugs = {{ ctx.topic_state.studied_subtopics | default([]) | tojson }};
+        const initialStudyCompleted = {{ ctx.topic_state.study_completed | default(false) | tojson }};
+        const isLoggedIn = {{ is_logged_in | default(false) | tojson }};
+
+        let activeSubIdx = 0;
+        const studiedIndices = new Set();
+        initialStudiedSlugs.forEach((slug) => {
+            const idx = subtopicsData.findIndex((s, i) => s.id === slug || String(i) === String(slug));
+            if (idx >= 0) studiedIndices.add(idx);
+        });
+        if (initialStudyCompleted && subtopicsData.length > 0) {
+            subtopicsData.forEach((_, i) => studiedIndices.add(i));
+        }
+
+        let masteryQuestions = [];
+        let masteryQuestionSet = "";
+        let masteryAnswers = {};
+        let masteryActiveIdx = 0;
+
+        function setVisibleStage(stageId) {
+            ["stage-overview", "stage-study", "stage-assessment", "stage-assessment-result"].forEach((id) => {
+                const el = document.getElementById(id);
+                if (el) el.hidden = (id !== stageId);
+            });
+            window.scrollTo({ top: 0, behavior: "auto" });
+        }
+
+        function updateStatusBadge(statusText, masteryText) {
+            const statusEl = document.getElementById("topic-status-display");
+            if (statusEl && statusText) {
+                statusEl.textContent = statusText;
+                statusEl.className = "status-label " + String(statusText).toLowerCase().replace(/\s+/g, "-");
+            }
+            const mWrap = document.getElementById("topic-mastery-wrap");
+            const mEl = document.getElementById("topic-mastery-display");
+            if (mWrap && mEl && masteryText && masteryText !== "Unassessed") {
+                mWrap.hidden = false;
+                mEl.textContent = masteryText;
+            }
+        }
+
+        function refreshStudyProgressUI() {
+            const total = subtopicsData.length;
+            const doneCount = studiedIndices.size;
+            const allDone = total > 0 && doneCount >= total;
+
+            const ovProg = document.getElementById("overview-study-progress");
+            if (ovProg) ovProg.textContent = `${doneCount} of ${total} studied`;
+
+            const hintEl = document.getElementById("overview-mastery-hint");
+            if (hintEl) {
+                hintEl.textContent = allDone
+                    ? "All subtopics studied. You can now take the Mastery Assessment."
+                    : `Study all ${total} subtopics to unlock Start Mastery Assessment.`;
+            }
+
+            const btnOverviewStart = document.getElementById("btn-start-mastery-assessment");
+            if (btnOverviewStart) btnOverviewStart.hidden = !allDone;
+
+            const btnStudyStart = document.getElementById("btn-study-start-assessment");
+            if (btnStudyStart) btnStudyStart.hidden = !allDone;
+
+            const pct = total > 0 ? Math.round((doneCount / total) * 100) : 0;
+            const bar = document.getElementById("study-progress-bar");
+            const cap = document.getElementById("study-progress-caption");
+            if (bar) bar.value = pct;
+            if (cap) cap.textContent = `${doneCount} of ${total} studied`;
+
+            document.querySelectorAll(".subtopic-preview-btn").forEach((btn) => {
+                const idx = Number(btn.getAttribute("data-sub-idx"));
+                const isDone = studiedIndices.has(idx);
+                btn.classList.toggle("studied", isDone);
+                const act = btn.querySelector(".subtopic-preview-action");
+                if (act) act.textContent = isDone ? "Studied \u2713" : "Open \u2192";
+            });
+        }
+
+        async function recordSubtopicStudied(sub) {
+            if (!sub) return;
+            try {
+                const res = await fetch("/api/study-subtopic", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        topic_id: studyTopicId,
+                        subtopic_id: sub.id || String(activeSubIdx),
+                    }),
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.status) {
+                        updateStatusBadge(data.status, null);
+                    }
+                    if (data && data.study_completed) {
+                        subtopicsData.forEach((_, i) => studiedIndices.add(i));
+                        refreshStudyProgressUI();
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to record subtopic study progress:", err);
+            }
+        }
+
+        function showOverview() {
+            refreshStudyProgressUI();
+            setVisibleStage("stage-overview");
+        }
+
+        function openFirstUnstudied() {
+            const nextUnstudied = subtopicsData.findIndex((_, i) => !studiedIndices.has(i));
+            openSubtopic(nextUnstudied >= 0 ? nextUnstudied : 0);
+        }
+
+        function openSubtopic(idx) {
+            if (!subtopicsData || subtopicsData.length === 0) return;
+            activeSubIdx = Math.max(0, Math.min(idx, subtopicsData.length - 1));
+            studiedIndices.add(activeSubIdx);
+
+            refreshStudyProgressUI();
+            setVisibleStage("stage-study");
+            renderActiveSubtopic();
+            recordSubtopicStudied(subtopicsData[activeSubIdx]);
+        }
+
+        function renderSidebarNav() {
+            const list = document.getElementById("subtopic-nav-list");
+            if (!list) return;
+            list.replaceChildren();
+
+            subtopicsData.forEach((sub, idx) => {
+                const btn = document.createElement("button");
+                btn.type = "button";
+                const isCurr = idx === activeSubIdx;
+                const isStudied = studiedIndices.has(idx);
+                btn.className = "subtopic-nav-btn" + (isCurr ? " current" : (isStudied ? " studied" : ""));
+                btn.textContent = `${idx + 1}. ${sub.title}`;
+                if (isCurr) btn.setAttribute("aria-current", "step");
+                btn.addEventListener("click", () => openSubtopic(idx));
+                list.appendChild(btn);
+            });
+        }
+
+        function renderActiveSubtopic() {
+            const sub = subtopicsData[activeSubIdx];
+            if (!sub) return;
+
+            const total = subtopicsData.length;
+            const num = activeSubIdx + 1;
+
+            document.getElementById("subtopic-counter").textContent = `Subtopic ${num} of ${total}`;
+            document.getElementById("sub-step-label").textContent = `Subtopic ${num} of ${total}`;
+            document.getElementById("sub-title").textContent = sub.title;
+
+            refreshStudyProgressUI();
+
+            const paraBox = document.getElementById("sub-paragraphs");
+            paraBox.replaceChildren();
+            (sub.content || []).forEach((text) => {
+                const p = document.createElement("p");
+                p.textContent = text;
+                paraBox.appendChild(p);
+            });
+
+            const kpWrap = document.getElementById("sub-keypoints-wrap");
+            const kpList = document.getElementById("sub-keypoints");
+            kpList.replaceChildren();
+            const points = sub.key_points || [];
+            if (points.length > 0) {
+                kpWrap.hidden = false;
+                points.forEach((pt) => {
+                    const li = document.createElement("li");
+                    li.textContent = pt;
+                    kpList.appendChild(li);
+                });
+            } else {
+                kpWrap.hidden = true;
+            }
+
+            const exWrap = document.getElementById("sub-example-wrap");
+            const exPre = document.getElementById("sub-example");
+            if (sub.example && sub.example.trim()) {
+                exWrap.hidden = false;
+                exPre.textContent = sub.example;
+            } else {
+                exWrap.hidden = true;
+            }
+
+            const refsWrap = document.getElementById("sub-refs-wrap");
+            const refsList = document.getElementById("sub-refs-list");
+            refsList.replaceChildren();
+            const refs = (sub.references && sub.references.length > 0) ? sub.references : topicFallbackRefs;
+            if (refs && refs.length > 0) {
+                refsWrap.hidden = false;
+                refs.forEach((ref) => {
+                    const li = document.createElement("li");
+                    li.className = "reference-item";
+
+                    const link = document.createElement("a");
+                    link.href = ref.url;
+                    link.target = "_blank";
+                    link.rel = "noopener noreferrer";
+                    link.className = "reference-link";
+                    link.textContent = ref.title;
+
+                    const src = document.createElement("span");
+                    src.className = "reference-source";
+                    src.textContent = ref.source ? `(${ref.source})` : "";
+
+                    li.appendChild(link);
+                    if (ref.source) li.appendChild(src);
+
+                    if (ref.note) {
+                        const note = document.createElement("p");
+                        note.className = "reference-note";
+                        note.textContent = ref.note;
+                        li.appendChild(note);
+                    }
+                    refsList.appendChild(li);
+                });
+            } else {
+                refsWrap.hidden = true;
+            }
+
+            document.getElementById("btn-sub-prev").disabled = activeSubIdx === 0;
+            const nextBtn = document.getElementById("btn-sub-next");
+            if (activeSubIdx >= total - 1) {
+                nextBtn.textContent = "Back to Overview";
+            } else {
+                nextBtn.textContent = "Next Subtopic \u2192";
+            }
+
+            renderSidebarNav();
+        }
+
+        function prevSubtopic() {
+            if (activeSubIdx > 0) {
+                openSubtopic(activeSubIdx - 1);
+            }
+        }
+
+        function nextSubtopic() {
+            if (activeSubIdx < subtopicsData.length - 1) {
+                openSubtopic(activeSubIdx + 1);
+            } else {
+                showOverview();
+            }
+        }
+
+        // -------------------------------------------------------------
+        // MASTERY ASSESSMENT WORKFLOW (5 QUESTION TYPES)
+        // -------------------------------------------------------------
+
+        function formatQuestionTypeLabel(qType) {
+            const labels = {
+                mcq: "Multiple Choice",
+                predict_output: "Predict the Output",
+                debug_code: "Find and Correct the Error",
+                fill_blank: "Fill in the Blanks",
+                write_code: "Write a Small Code Snippet",
+            };
+            return labels[qType] || "Question";
+        }
+
+        function isQuestionAnswered(q) {
+            if (!q) return false;
+            const val = masteryAnswers[String(q.id)];
+            return val !== undefined && val !== null && String(val).trim().length > 0;
+        }
+
+        async function startMasteryAssessment(isRetake) {
+            if (subtopicsData.length > 0 && studiedIndices.size < subtopicsData.length) {
+                alert("Please finish studying all subtopics before starting the Mastery Assessment.");
+                return;
+            }
+
+            const params = new URLSearchParams({
+                topic_id: String(studyTopicId),
+                retake: isRetake ? "1" : "0",
+            });
+            if (isRetake && masteryQuestionSet) {
+                params.set("last_set", masteryQuestionSet);
+            }
+
+            try {
+                const res = await fetch(`/api/mastery-assessment?${params.toString()}`);
+                const data = await res.json();
+                if (!res.ok || !data.questions || data.questions.length === 0) {
+                    alert(data.error || "Unable to load Mastery Assessment questions.");
+                    return;
+                }
+
+                masteryQuestions = data.questions;
+                masteryQuestionSet = data.question_set || "mastery_1";
+                masteryAnswers = {};
+                masteryActiveIdx = 0;
+
+                const errBox = document.getElementById("mastery-form-error");
+                if (errBox) {
+                    errBox.hidden = true;
+                    errBox.textContent = "";
+                }
+
+                setVisibleStage("stage-assessment");
+                renderMasteryQuestion();
+            } catch (err) {
+                console.error("Error loading Mastery Assessment:", err);
+                alert("Network error loading Mastery Assessment.");
+            }
+        }
+
+        function renderMasteryNav() {
+            const grid = document.getElementById("mastery-nav-grid");
+            if (!grid) return;
+            grid.replaceChildren();
+
+            let answeredCount = 0;
+            masteryQuestions.forEach((q, idx) => {
+                const answered = isQuestionAnswered(q);
+                if (answered) answeredCount += 1;
+
+                const btn = document.createElement("button");
+                btn.type = "button";
+                btn.className = "question-number " + (idx === masteryActiveIdx ? "current" : (answered ? "answered" : "unanswered"));
+                btn.textContent = String(idx + 1);
+                btn.setAttribute("aria-label", `Question ${idx + 1}`);
+                btn.addEventListener("click", () => {
+                    masteryActiveIdx = idx;
+                    renderMasteryQuestion();
+                });
+                grid.appendChild(btn);
+            });
+
+            const total = masteryQuestions.length || 5;
+            document.getElementById("mastery-progress-bar").max = total;
+            document.getElementById("mastery-progress-bar").value = answeredCount;
+            document.getElementById("mastery-progress-caption").textContent = `${answeredCount} of ${total} answered`;
+            document.getElementById("mastery-question-counter").textContent = `Question ${masteryActiveIdx + 1} of ${total}`;
+        }
+
+        function renderMasteryQuestion() {
+            const q = masteryQuestions[masteryActiveIdx];
+            if (!q) return;
+
+            document.getElementById("mastery-q-type-label").textContent = formatQuestionTypeLabel(q.question_type);
+            document.getElementById("mastery-q-text").textContent = q.text || "";
+
+            const body = document.getElementById("mastery-q-body");
+            body.replaceChildren();
+
+            const qid = String(q.id);
+            const currVal = masteryAnswers[qid] !== undefined ? masteryAnswers[qid] : "";
+
+            if (q.question_type === "mcq" && q.options) {
+                const list = document.createElement("div");
+                list.className = "answer-options";
+                ["A", "B", "C", "D"].forEach((letter) => {
+                    if (!q.options[letter]) return;
+                    const optBtn = document.createElement("button");
+                    optBtn.type = "button";
+                    optBtn.className = "answer-option" + (currVal === letter ? " selected" : "");
+                    optBtn.setAttribute("aria-pressed", String(currVal === letter));
+
+                    const badge = document.createElement("span");
+                    badge.className = "answer-letter";
+                    badge.textContent = letter;
+
+                    const txt = document.createElement("span");
+                    txt.className = "answer-text";
+                    txt.textContent = q.options[letter];
+
+                    optBtn.appendChild(badge);
+                    optBtn.appendChild(txt);
+                    optBtn.addEventListener("click", () => {
+                        masteryAnswers[qid] = letter;
+                        const errBox = document.getElementById("mastery-form-error");
+                        if (errBox) errBox.hidden = true;
+                        renderMasteryQuestion();
+                    });
+                    list.appendChild(optBtn);
+                });
+                body.appendChild(list);
+            } else if (q.question_type === "predict_output" || q.question_type === "fill_blank") {
+                if (q.code_snippet) {
+                    const pre = document.createElement("pre");
+                    pre.className = "code-snippet-box";
+                    pre.textContent = q.code_snippet;
+                    body.appendChild(pre);
+                }
+
+                const lbl = document.createElement("label");
+                lbl.className = "input-label-block";
+                lbl.setAttribute("for", "mastery-short-input");
+                lbl.textContent = q.question_type === "fill_blank" ? "Fill in the Blank (___):" : "Predicted Output:";
+                body.appendChild(lbl);
+
+                const inp = document.createElement("input");
+                inp.type = "text";
+                inp.id = "mastery-short-input";
+                inp.className = "output-answer-input";
+                inp.placeholder = q.question_type === "fill_blank"
+                    ? "Enter the missing keyword, operator, or expression..."
+                    : "Enter the exact output...";
+                inp.value = currVal;
+                inp.addEventListener("input", (e) => {
+                    masteryAnswers[qid] = e.target.value;
+                    const errBox = document.getElementById("mastery-form-error");
+                    if (errBox) errBox.hidden = true;
+                    renderMasteryNav();
+                });
+                body.appendChild(inp);
+            } else {
+                const isDebug = q.question_type === "debug_code";
+                if (isDebug && q.code_snippet) {
+                    const refLbl = document.createElement("span");
+                    refLbl.className = "input-label-block";
+                    refLbl.textContent = "Original Code (fix the bug below):";
+                    body.appendChild(refLbl);
+
+                    const pre = document.createElement("pre");
+                    pre.className = "code-snippet-box";
+                    pre.textContent = q.code_snippet;
+                    body.appendChild(pre);
+                }
+
+                const lbl = document.createElement("label");
+                lbl.className = "input-label-block";
+                lbl.setAttribute("for", "mastery-code-editor");
+                lbl.textContent = isDebug ? "Your Corrected Code:" : "Write Your Code:";
+                body.appendChild(lbl);
+
+                const ta = document.createElement("textarea");
+                ta.id = "mastery-code-editor";
+                ta.className = "code-editor-input";
+                ta.spellcheck = false;
+                ta.value = currVal ? currVal : (q.code_snippet || "");
+                ta.addEventListener("input", (e) => {
+                    masteryAnswers[qid] = e.target.value;
+                    const errBox = document.getElementById("mastery-form-error");
+                    if (errBox) errBox.hidden = true;
+                    renderMasteryNav();
+                });
+                body.appendChild(ta);
+
+                if (q.code_snippet) {
+                    const helper = document.createElement("div");
+                    helper.className = "editor-helper-row";
+                    const resetBtn = document.createElement("button");
+                    resetBtn.type = "button";
+                    resetBtn.className = "text-link-muted";
+                    resetBtn.textContent = "Reset starter code";
+                    resetBtn.addEventListener("click", () => {
+                        delete masteryAnswers[qid];
+                        ta.value = q.code_snippet;
+                        renderMasteryNav();
+                    });
+                    helper.appendChild(resetBtn);
+                    body.appendChild(helper);
+                }
+            }
+
+            document.getElementById("btn-mastery-prev").disabled = (masteryActiveIdx === 0);
+            document.getElementById("btn-mastery-next").disabled = (masteryActiveIdx >= masteryQuestions.length - 1);
+            renderMasteryNav();
+        }
+
+        function prevMasteryQuestion() {
+            if (masteryActiveIdx > 0) {
+                masteryActiveIdx -= 1;
+                renderMasteryQuestion();
+            }
+        }
+
+        function nextMasteryQuestion() {
+            if (masteryActiveIdx < masteryQuestions.length - 1) {
+                masteryActiveIdx += 1;
+                renderMasteryQuestion();
+            }
+        }
+
+        async function submitMasteryAssessment() {
+            const missingNums = [];
+            masteryQuestions.forEach((q, idx) => {
+                if (!isQuestionAnswered(q)) {
+                    missingNums.push(idx + 1);
+                }
+            });
+
+            const errBox = document.getElementById("mastery-form-error");
+            if (missingNums.length > 0) {
+                if (errBox) {
+                    errBox.textContent = `Please attempt all ${masteryQuestions.length} questions before submitting (unanswered: Question ${missingNums.join(", ")}).`;
+                    errBox.hidden = false;
+                }
+                masteryActiveIdx = missingNums[0] - 1;
+                renderMasteryQuestion();
+                return;
+            }
+
+            const submitBtn = document.getElementById("btn-submit-mastery-assessment");
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = "Evaluating...";
+            }
+
+            try {
+                const res = await fetch("/api/mastery-assessment-submit", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        topic_id: studyTopicId,
+                        question_set: masteryQuestionSet,
+                        answers: masteryAnswers,
+                    }),
+                });
+                const data = await res.json();
+                if (!res.ok) {
+                    if (errBox) {
+                        errBox.textContent = data.error || "Please complete all questions before submitting.";
+                        errBox.hidden = false;
+                    }
+                    return;
+                }
+                renderMasteryResult(data);
+            } catch (err) {
+                console.error("Mastery submission failed:", err);
+                if (errBox) {
+                    errBox.textContent = "Network error submitting assessment. Please try again.";
+                    errBox.hidden = false;
+                }
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = "Submit Assessment";
+                }
+            }
+        }
+
+        function renderMasteryResult(data) {
+            setVisibleStage("stage-assessment-result");
+            updateStatusBadge(data.topic_status, data.mastery_state);
+
+            const banner = document.getElementById("result-summary-banner");
+            banner.className = "result-banner " + (data.passed ? "passed" : "failed");
+
+            document.getElementById("result-score-text").textContent = `${data.score} / ${data.total_questions} (${data.score_percentage}%)`;
+            const badgeLine = document.getElementById("result-badge-line");
+            badgeLine.textContent = `${data.mastery_state} \u00B7 Status: ${data.topic_status}`;
+            badgeLine.style.color = data.passed ? "#15803d" : "#b91c1c";
+
+            if (data.passed) {
+                document.getElementById("result-heading").textContent = "Topic Completed";
+                document.getElementById("result-subtitle").textContent =
+                    `You scored ${data.score} out of ${data.total_questions} (pass mark: ${data.pass_score}/5). Mastery verified as ${data.mastery_state}.`;
+            } else {
+                document.getElementById("result-heading").textContent = "Needs Attention";
+                document.getElementById("result-subtitle").textContent =
+                    `You scored ${data.score} out of ${data.total_questions}. Score at least ${data.pass_score}/${data.total_questions} (80%) to mark this topic Completed.`;
+            }
+
+            const unlockNote = document.getElementById("result-unlock-note");
+            if (data.passed && data.newly_unlocked_topics && data.newly_unlocked_topics.length > 0) {
+                unlockNote.hidden = false;
+                unlockNote.textContent = `Unlocked next topics: ${data.newly_unlocked_topics.join(", ")}`;
+            } else {
+                unlockNote.hidden = true;
+            }
+
+            const guestNote = document.getElementById("result-guest-note");
+            if (guestNote) guestNote.hidden = Boolean(data.is_logged_in);
+
+            // Weak concepts & recommended subtopics to revise
+            const revBox = document.getElementById("result-revision-box");
+            const wcWrap = document.getElementById("result-weak-concepts-wrap");
+            const wcList = document.getElementById("result-weak-concepts");
+            const subWrap = document.getElementById("result-subtopics-wrap");
+            const subBtns = document.getElementById("result-revise-buttons");
+
+            wcList.replaceChildren();
+            subBtns.replaceChildren();
+
+            const hasWeak = data.weak_concepts && data.weak_concepts.length > 0;
+            const hasRecSubs = data.recommended_subtopics && data.recommended_subtopics.length > 0;
+
+            if (hasWeak) {
+                wcWrap.hidden = false;
+                data.weak_concepts.forEach((wc) => {
+                    const li = document.createElement("li");
+                    li.className = "weak-concept-chip";
+                    li.textContent = wc;
+                    wcList.appendChild(li);
+                });
+            } else {
+                wcWrap.hidden = true;
+            }
+
+            if (hasRecSubs) {
+                subWrap.hidden = false;
+                data.recommended_subtopics.forEach((rec) => {
+                    const btn = document.createElement("button");
+                    btn.type = "button";
+                    btn.className = "btn-secondary";
+                    btn.style.fontSize = "13px";
+                    btn.textContent = `Revise: ${rec.title} \u2192`;
+                    btn.addEventListener("click", () => openSubtopic(rec.index || 0));
+                    subBtns.appendChild(btn);
+                });
+            } else {
+                subWrap.hidden = true;
+            }
+
+            revBox.hidden = (!hasWeak && !hasRecSubs);
+
+            // Incorrect question review
+            const incWrap = document.getElementById("result-incorrect-wrap");
+            const incList = document.getElementById("result-incorrect-list");
+            incList.replaceChildren();
+
+            if (data.incorrect_items && data.incorrect_items.length > 0) {
+                incWrap.hidden = false;
+                data.incorrect_items.forEach((item) => {
+                    const card = document.createElement("article");
+                    card.className = "incorrect-item-card";
+
+                    const pill = document.createElement("span");
+                    pill.className = "q-type-pill";
+                    pill.textContent = `Q${item.display_number} \u00B7 ${formatQuestionTypeLabel(item.question_type)}`;
+                    card.appendChild(pill);
+
+                    const qt = document.createElement("h3");
+                    qt.style.fontSize = "15px";
+                    qt.style.margin = "4px 0 8px";
+                    qt.textContent = item.question_text;
+                    card.appendChild(qt);
+
+                    if (item.code_snippet) {
+                        const snippet = document.createElement("pre");
+                        snippet.className = "code-snippet-box";
+                        snippet.style.marginBottom = "10px";
+                        snippet.textContent = item.code_snippet;
+                        card.appendChild(snippet);
+                    }
+
+                    const grid = document.createElement("div");
+                    grid.className = "incorrect-answer-grid";
+
+                    const stuBox = document.createElement("div");
+                    stuBox.className = "answer-box student";
+                    const stuStrong = document.createElement("strong");
+                    stuStrong.textContent = "Your Answer";
+                    const stuPre = document.createElement("pre");
+                    stuPre.textContent = item.student_answer || "(No answer)";
+                    stuBox.appendChild(stuStrong);
+                    stuBox.appendChild(stuPre);
+
+                    const corBox = document.createElement("div");
+                    corBox.className = "answer-box correct";
+                    const corStrong = document.createElement("strong");
+                    corStrong.textContent = "Correct Answer";
+                    const corPre = document.createElement("pre");
+                    corPre.textContent = item.correct_answer || "";
+                    corBox.appendChild(corStrong);
+                    corBox.appendChild(corPre);
+
+                    grid.appendChild(stuBox);
+                    grid.appendChild(corBox);
+                    card.appendChild(grid);
+
+                    if (item.explanation || item.feedback) {
+                        const expP = document.createElement("p");
+                        expP.style.fontSize = "13px";
+                        expP.style.margin = "0";
+                        expP.style.color = "var(--text)";
+                        expP.textContent = item.explanation || item.feedback;
+                        card.appendChild(expP);
+                    }
+
+                    incList.appendChild(card);
+                });
+            } else {
+                incWrap.hidden = true;
+            }
+
+            const retakeBtn = document.getElementById("btn-retake-mastery-assessment");
+            if (retakeBtn) {
+                retakeBtn.hidden = Boolean(data.passed);
+            }
+        }
+
+        // Initial page state sync
+        refreshStudyProgressUI();
+
+        if (initialSubtopicArg) {
+            const foundIdx = subtopicsData.findIndex((s, i) =>
+                s.id === initialSubtopicArg || String(i) === String(initialSubtopicArg)
+            );
+            if (foundIdx >= 0) {
+                openSubtopic(foundIdx);
+            }
+        }
+    </script>
+    {% endif %}
+
+</body>
+
+</html>

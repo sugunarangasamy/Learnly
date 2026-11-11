@@ -1,0 +1,185 @@
+
+.module1-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 6%;
+    background: #ffffff;
+    border-bottom: 1px solid #DCE2EB;
+}
+
+.module1-logo {
+    color: #1F4959;
+    font-size: 24px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.module1-header span {
+    color: #667085;
+    font-size: 14px;
+}
+
+.module1-container {
+    max-width: 680px;
+    margin: 48px auto;
+    padding: 0 20px;
+}
+
+.module1-card {
+    background: #ffffff;
+    border: 1px solid #DCE2EB;
+    padding: 32px;
+}
+
+.module1-step {
+    color: #1F4959;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.module1-card h1 {
+    color: #172033;
+    font-size: 28px;
+    line-height: 1.35;
+    margin: 12px 0;
+}
+
+.module1-description {
+    color: #667085;
+    line-height: 1.7;
+    margin-bottom: 28px;
+}
+
+.module1-field {
+    margin-bottom: 24px;
+}
+
+.module1-field > label,
+.module1-field legend {
+    display: block;
+    color: #172033;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.module1-field legend {
+    padding: 0;
+}
+
+.module1-field input[type="text"],
+.module1-field select {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 13px;
+    border: 1px solid #DCE2EB;
+    background: #ffffff;
+    color: #172033;
+    font: inherit;
+    border-radius: 3px;
+}
+
+.module1-field input:focus,
+.module1-field select:focus {
+    outline: 2px solid #31C6CB;
+    outline-offset: 2px;
+}
+
+.module1-field fieldset,
+fieldset.module1-field {
+    border: 0;
+    padding: 0;
+}
+
+.module1-option {
+    display: flex !important;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 15px;
+    margin-bottom: 10px;
+    border: 1px solid #DCE2EB;
+    cursor: pointer;
+}
+
+.module1-option input {
+    margin-top: 4px;
+    accent-color: #1F4959;
+}
+
+.module1-option span {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.module1-option strong {
+    color: #172033;
+}
+
+.module1-option small {
+    color: #667085;
+    line-height: 1.5;
+}
+
+.module1-option:has(input:checked) {
+    border-color: #1F4959;
+    background: #F0FAFA;
+}
+
+.module1-button {
+    display: inline-block;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 14px 18px;
+    border: 1px solid #1F4959;
+    border-radius: 3px;
+    background: #1F4959;
+    color: #ffffff;
+    text-align: center;
+    font: inherit;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.module1-button:hover {
+    background: #163846;
+}
+
+.profile-summary {
+    padding: 16px;
+    margin: 24px 0;
+    border: 1px solid #DCE2EB;
+    background: #F8FAFC;
+    line-height: 1.8;
+    overflow-wrap: anywhere;
+}
+
+.module1-note {
+    color: #667085;
+    font-size: 13px;
+    line-height: 1.6;
+    margin-bottom: 24px;
+}
+
+.module1-error {
+    color: #B42318;
+    margin-bottom: 16px;
+}
+
+@media (max-width: 520px) {
+    .module1-container {
+        margin: 24px auto;
+        padding: 0 14px;
+    }
+
+    .module1-card {
+        padding: 22px;
+    }
+
+    .module1-card h1 {
+        font-size: 24px;
+    }
+}
+

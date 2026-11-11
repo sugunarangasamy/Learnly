@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learnly | Knowledge Graph</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        :root {
+            --status-completed: #15803d;
+            --status-inprogress: #b45309;
+            --status-pending: #0e7490;
+            --status-attention: #b91c1c;
+            --status-available: #0369a1;
+            --status-locked: #64748b;
+        }
+
+        .page-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        /* Course Progress Summary */
+        .progress-summary-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+        }
+
+        .progress-summary-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .progress-summary-title {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+        }
+
+        .progress-summary-title h2 {
+            font-size: 16px;
+            font-weight: 700;
+            margin: 0;
+            color: var(--text);
+        }
+
+        .progress-summary-title span {
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .progress-summary-percent {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--blue);
+        }
+
+        .progress-track-wrapper {
+            position: relative;
+            height: 8px;
+            background: #EEF2F6;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 14px;
+        }
+
+        .progress-fill-bar {
+            height: 100%;
+            background: var(--blue);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .progress-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #EEF2F6;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+            font-size: 13px;
+        }
+
+        .stat-number {
+            font-weight: 700;
+            font-size: 15px;
+            color: var(--text);
+        }
+
+        .stat-label-text {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .stat-label-text.completed { color: var(--status-completed); }
+        .stat-label-text.inprogress { color: var(--status-inprogress); }
+        .stat-label-text.assessment-pending { color: var(--status-pending); }
+        .stat-label-text.needs-attention { color: var(--status-attention); }
+        .stat-label-text.not-started,
+        .stat-label-text.available { color: var(--status-available); }
+        .stat-label-text.locked { color: var(--status-locked); }
+
+        /* Workspace Grid */
+        .workspace-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 320px;
+            gap: 20px;
+            align-items: start;
+        }
+
+        .panel-box {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .panel-box-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            background: #FAFCFD;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .panel-box-header h2 {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text);
+            margin: 0;
+        }
+
+        .panel-box-header p {
+            margin: 3px 0 0;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        /* View Toggle Switcher */
+        .view-switch-tabs {
+            display: inline-flex;
+            background: #EEF2F6;
+            padding: 3px;
+            border-radius: 4px;
+            gap: 2px;
+        }
+
+        .view-switch-btn {
+            border: none;
+            background: transparent;
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--muted);
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .view-switch-btn:hover {
+            color: var(--text);
+        }
+
+        .view-switch-btn.active {
+            background: var(--white);
+            color: var(--text);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Topic List View */
+        .topic-list-container {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: var(--white);
+            min-height: 480px;
+        }
+
+        .topic-list-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: border-color 0.15s ease, background-color 0.15s ease;
+            text-align: left;
+            width: 100%;
+            font-family: inherit;
+        }
+
+        .topic-list-item:hover {
+            border-color: var(--blue);
+            background: #FAFCFD;
+        }
+
+        .topic-list-item.selected {
+            border-color: var(--blue);
+            background: #F0FDFD;
+            box-shadow: 0 0 0 1px var(--blue);
+        }
+
+        .topic-list-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .topic-list-number {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--muted);
+            min-width: 24px;
+        }
+
+        .topic-list-title-box {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .topic-list-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .topic-list-prereq-hint {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        /* Status Text Badge */
+        .status-text {
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .status-text.completed { color: var(--status-completed); }
+        .status-text.in-progress { color: var(--status-inprogress); }
+        .status-text.assessment-pending { color: var(--status-pending); }
+        .status-text.needs-attention { color: var(--status-attention); }
+        .status-text.not-started,
+        .status-text.available { color: var(--status-available); }
+        .status-text.locked { color: var(--status-locked); }
+
+        /* Canvas / Graph Area */
+        .path-canvas-area {
+            position: relative;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding: 20px 16px;
+            background: #FAFCFD;
+            min-height: 500px;
+            display: flex;
+            justify-content: center;
+            border-top: 1px solid #EEF2F6;
+        }
+
+        .path-canvas {
+            position: relative;
+            width: 680px;
+            height: 480px;
+            flex-shrink: 0;
+        }
+
+        .path-connections-svg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .path-arrow-line {
+            fill: none;
+            stroke: #94A3B8;
+            stroke-width: 1.8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            transition: stroke 0.2s ease, stroke-width 0.2s ease;
+        }
+
+        .path-arrow-line.highlight {
+            stroke: var(--blue);
+            stroke-width: 2.4;
+        }
+
+        /* Topic Node Card Styles */
+        .topic-node {
+            position: absolute;
+            width: 180px;
+            min-height: 72px;
+            padding: 10px 12px;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            text-align: left;
+            cursor: pointer;
+            z-index: 2;
+            transition: all 0.15s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            font-family: inherit;
+        }
+
+        .topic-node:hover {
+            border-color: var(--blue);
+            background: #FAFCFD;
+        }
+
+        .topic-node.selected {
+            border-color: var(--blue);
+            background: #F0FDFD;
+            box-shadow: 0 0 0 1px var(--blue);
+        }
+
+        .topic-node-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            line-height: 1.35;
+        }
+
+        .topic-node-status {
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 6px;
+        }
+
+        /* Legend Footer */
+        .path-legend {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 18px;
+            padding: 12px 20px;
+            background: #FAFCFD;
+            border-top: 1px solid var(--border);
+            font-size: 12px;
+        }
+
+        .legend-title {
+            font-weight: 700;
+            color: var(--muted);
+        }
+
+        .legend-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+        }
+
+        .legend-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 2px;
+        }
+
+        .legend-indicator.completed { background: var(--status-completed); }
+        .legend-indicator.inprogress { background: var(--status-inprogress); }
+        .legend-indicator.assessment-pending { background: var(--status-pending); }
+        .legend-indicator.needs-attention { background: var(--status-attention); }
+        .legend-indicator.not-started,
+        .legend-indicator.available { background: var(--status-available); }
+        .legend-indicator.locked { background: var(--status-locked); }
+
+        /* Detail Sidebar Panel */
+        .detail-card-body {
+            padding: 20px;
+        }
+
+        .detail-topic-title {
+            margin: 0 0 8px;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1.3;
+        }
+
+        .detail-status-line {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .detail-desc-text {
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.5;
+            margin: 0 0 14px;
+        }
+
+        .detail-meta-group {
+            padding: 12px 0;
+            border-top: 1px solid #EEF2F6;
+        }
+
+        .detail-meta-group h3 {
+            margin: 0 0 6px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .prereq-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            font-size: 13px;
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .prereq-list li {
+            padding-left: 10px;
+            border-left: 2px solid var(--border);
+        }
+
+        .prereq-list li.empty {
+            border-left: none;
+            padding-left: 0;
+            color: var(--muted);
+            font-style: italic;
+        }
+
+        .detail-actions {
+            margin-top: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .detail-btn-action,
+        .detail-btn-secondary {
+            width: 100%;
+        }
+
+        /* Floating Sync Toast */
+        .sync-toast {
+            display: none;
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 10px 16px;
+            background: #172033;
+            color: #FFFFFF;
+            border-radius: 4px;
+            font-size: 13px;
+            z-index: 999;
+            pointer-events: none;
+        }
+
+        .sync-toast.visible {
+            display: block;
+        }
+
+        @media (max-width: 900px) {
+            .workspace-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .progress-stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .page-header-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .progress-stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <header class="navbar">
+        <a href="{{ url_for('home') }}" class="logo">
+            Learn<span>ly</span>
+        </a>
+
+        <div class="nav-links-cluster">
+            <a href="{{ url_for('module3', course=course) }}" class="nav-tab-link active" title="Knowledge Graph">
+                Knowledge Graph
+            </a>
+            <a href="{{ url_for('module4', course=course) }}" class="nav-tab-link" title="Skill Gaps">
+                Skill Gaps
+            </a>
+            <a href="{{ url_for('module5', course=course) }}" class="nav-tab-link" title="Learning Path">
+                Learning Path
+            </a>
+            <a href="{{ url_for('module6') }}" class="nav-tab-link" title="My Progress">
+                My Progress
+            </a>
+            <a href="{{ url_for('home') }}" class="nav-tab-link" title="Return to Dashboard">
+                &larr; Dashboard
+            </a>
+        </div>
+    </header>
+
+    <main>
+
+        <!-- PAGE HEADER & COURSE SELECTOR -->
+        <div class="page-header-row">
+            <div>
+                <h1 style="font-size: 24px; font-weight: 700; margin-bottom: 4px;">
+                    Topics &amp; Prerequisites
+                </h1>
+                <p style="color: var(--muted); margin: 0; font-size: 14px;">
+                    Course: <strong id="course-display-name" style="color: var(--text);">{{ path_data.course_name if path_data else course }}</strong>
+                </p>
+            </div>
+
+            {% if all_courses %}
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <label for="course-select" style="font-size: 13px; font-weight: 600; color: var(--muted);">Course:</label>
+                <select id="course-select" onchange="location.href='/module3?course=' + encodeURIComponent(this.value);" style="padding: 7px 12px; border-radius: 4px; border: 1px solid var(--border); background: var(--white); font-size: 13px; font-weight: 600; color: var(--text); cursor: pointer;">
+                    {% for c in all_courses %}
+                    <option value="{{ c['name'] }}" {% if (path_data and c['name'] == path_data.course_name) or c['name'] == course %}selected{% endif %}>
+                        {{ c['name'] }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- PROGRESS SUMMARY -->
+        <section class="progress-summary-card" aria-label="Course completion summary">
+            <div class="progress-summary-header">
+                <div class="progress-summary-title">
+                    <h2>Progress</h2>
+                    <span id="progress-summary-subtitle">(0 of 6 completed)</span>
+                </div>
+                <div class="progress-summary-percent" id="overall-progress-text">0%</div>
+            </div>
+
+            <div class="progress-track-wrapper" role="progressbar" aria-label="Course completion progress" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                <div class="progress-fill-bar" id="progress-bar-fill" style="width: 0%;"></div>
+            </div>
+
+            <div class="progress-stats-grid">
+                <div class="stat-item">
+                    <span class="stat-number" id="stat-completed-count">0</span>
+                    <span class="stat-label-text completed">Completed</span>
+                </div>
+
+                <div class="stat-item">
+                    <span class="stat-number" id="stat-pending-count">0</span>
+                    <span class="stat-label-text assessment-pending">Assessment Pending</span>
+                </div>
+
+                <div class="stat-item">
+                    <span class="stat-number" id="stat-inprogress-count">0</span>
+                    <span class="stat-label-text inprogress">In Progress</span>
+                </div>
+
+                <div class="stat-item">
+                    <span class="stat-number" id="stat-attention-count">0</span>
+                    <span class="stat-label-text needs-attention">Needs Attention</span>
+                </div>
+
+                <div class="stat-item">
+                    <span class="stat-number" id="stat-notstarted-count">0</span>
+                    <span class="stat-label-text not-started">Not Started</span>
+                </div>
+
+                <div class="stat-item">
+                    <span class="stat-number" id="stat-locked-count">0</span>
+                    <span class="stat-label-text locked">Locked</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- MAIN WORKSPACE: TOPICS ON LEFT, DETAILS ON RIGHT -->
+        <div class="workspace-grid">
+
+            <!-- LEFT PANEL: TOPIC LIST & DIAGRAM -->
+            <section class="panel-box" aria-label="Course topics">
+                <div class="panel-box-header">
+                    <div>
+                        <h2 id="view-section-title">Topics</h2>
+                        <p id="view-section-desc">Click any topic to check prerequisites and open study materials.</p>
+                    </div>
+                    <div class="view-switch-tabs" role="tablist" aria-label="View mode">
+                        <button type="button" class="view-switch-btn active" id="btn-view-list" role="tab" aria-selected="true">
+                            List
+                        </button>
+                        <button type="button" class="view-switch-btn" id="btn-view-flow" role="tab" aria-selected="false">
+                            Diagram
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 1. NUMBERED TOPIC LIST VIEW -->
+                <div class="topic-list-container" id="topic-list-view">
+                    <!-- Dynamically populated -->
+                </div>
+
+                <!-- 2. FLOW MAP CANVAS AREA -->
+                <div class="path-canvas-area" id="flow-canvas-area" style="display: none;">
+                    {% if path_data and path_data.graph and path_data.graph.has_cycle %}
+                    <div style="padding: 20px; background: #FEF2F2; border: 1px solid #FCA5A5; border-radius: 4px; color: #991B1B; margin: 20px auto; max-width: 480px; text-align: center;">
+                        <h3 style="margin: 0 0 6px; font-size: 15px;">Prerequisite Cycle Detected</h3>
+                        <p style="margin: 0; font-size: 13px;">This course has circular topic prerequisites. Please check configuration.</p>
+                    </div>
+                    {% elif path_data and path_data.graph %}
+                    <div class="path-canvas" id="path-canvas" style="width: {{ path_data.graph.width }}px; height: {{ path_data.graph.height }}px;">
+
+                        <!-- SVG CONNECTIONS WITH ARROWHEADS -->
+                        <svg class="path-connections-svg" id="path-connections-svg" viewBox="0 0 {{ path_data.graph.width }} {{ path_data.graph.height }}" aria-hidden="true">
+                            <defs>
+                                <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5"
+                                        markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                                    <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#94A3B8" />
+                                </marker>
+                                <marker id="arrow-highlight" viewBox="0 0 10 10" refX="8" refY="5"
+                                        markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                                    <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#31c6cb" />
+                                </marker>
+                            </defs>
+
+                            {% for edge in path_data.graph.edges %}
+                            <path class="path-arrow-line edge-path"
+                                  id="edge-{{ edge.source_id }}-{{ edge.target_id }}"
+                                  data-source="{{ edge.source_id }}"
+                                  data-target="{{ edge.target_id }}"
+                                  d="{{ edge.path_d }}"
+                                  marker-end="url(#arrow)" />
+                            {% endfor %}
+                        </svg>
+
+                        <!-- TOPIC NODES -->
+                        <div id="nodes-container">
+                            {% for node in path_data.graph.nodes %}
+                            <button type="button"
+                                    class="topic-node status-{{ node.status_class }} {% if loop.first %}selected{% endif %}"
+                                    id="node-{{ node.id }}"
+                                    data-id="{{ node.id }}"
+                                    style="left: {{ node.x }}px; top: {{ node.y }}px;"
+                                    aria-pressed="{% if loop.first %}true{% else %}false{% endif %}">
+                                <span class="topic-node-title">{{ node.name }}</span>
+                                <span class="topic-node-status status-text {{ node.status | lower | replace(' ', '-') }}" id="tag-{{ node.id }}">
+                                    {{ node.mastery_state if node.mastery_state and node.mastery_state != 'Unassessed' else node.status }}
+                                </span>
+                            </button>
+                            {% endfor %}
+                        </div>
+
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- LEGEND (only shown for Diagram view) -->
+                <div class="path-legend" id="flow-legend" aria-label="Status legend" style="display: none;">
+                    <span class="legend-title">Status:</span>
+                    <div class="legend-chip">
+                        <span class="legend-indicator completed"></span>
+                        <span>Completed</span>
+                    </div>
+                    <div class="legend-chip">
+                        <span class="legend-indicator assessment-pending"></span>
+                        <span>Assessment Pending</span>
+                    </div>
+                    <div class="legend-chip">
+                        <span class="legend-indicator inprogress"></span>
+                        <span>In Progress</span>
+                    </div>
+                    <div class="legend-chip">
+                        <span class="legend-indicator needs-attention"></span>
+                        <span>Needs Attention</span>
+                    </div>
+                    <div class="legend-chip">
+                        <span class="legend-indicator not-started"></span>
+                        <span>Not Started</span>
+                    </div>
+                    <div class="legend-chip">
+                        <span class="legend-indicator locked"></span>
+                        <span>Locked</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- RIGHT PANEL: TOPIC DETAILS & ACTIONS -->
+            <aside class="panel-box" aria-label="Selected topic details">
+                <div class="panel-box-header">
+                    <h2>Topic Details</h2>
+                </div>
+
+                <div class="detail-card-body">
+                    <h3 class="detail-topic-title" id="detail-topic-name">Topic Name</h3>
+
+                    <p class="detail-status-line">
+                        Status: <span id="detail-status-text" class="status-text not-started">Not Started</span>
+                        <span id="detail-mastery-wrap" hidden> &middot; Mastery: <span id="detail-mastery-text" class="mastery-text unassessed"></span></span>
+                    </p>
+
+                    <p class="detail-desc-text" id="detail-description">
+                        Select any topic on the left to view its details.
+                    </p>
+
+                    <div class="detail-meta-group">
+                        <h3>Complete Before This</h3>
+                        <ul class="prereq-list" id="detail-prereq-list">
+                            <li class="empty">None &mdash; ready to start anytime</li>
+                        </ul>
+                        <p id="detail-locked-hint" class="muted" style="margin: 8px 0 0; font-size: 12px;" hidden>
+                            Complete the topics above first to unlock this topic.
+                        </p>
+                    </div>
+
+                    <div class="detail-actions">
+                        <a href="#" class="btn-primary detail-btn-action" id="detail-practice-link" style="display: none;">
+                            Study &rarr;
+                        </a>
+                    </div>
+                </div>
+            </aside>
+
+        </div>
+
+    </main>
+
+    <!-- FLOATING SYNC TOAST -->
+    <div id="sync-toast" class="sync-toast" role="status" aria-live="polite">
+        <span id="sync-toast-message"></span>
+    </div>
+
+    <footer>
+        <p>Learnly</p>
+    </footer>
+
+    <!-- INTERACTIVITY & DATABASE SYNC SCRIPT -->
+    <script>
+        let serverPathData = {{ path_data | tojson if path_data else 'null' }};
+        const isLoggedIn = {{ is_logged_in | tojson }};
+
+        let topicsState = {};
+        let selectedTopicId = null;
+
+        const detailTitle = document.getElementById("detail-topic-name");
+        const detailStatusText = document.getElementById("detail-status-text");
+        const detailMasteryText = document.getElementById("detail-mastery-text");
+        const detailMasteryWrap = document.getElementById("detail-mastery-wrap");
+        const detailPracticeLink = document.getElementById("detail-practice-link");
+        const detailDesc = document.getElementById("detail-description");
+        const detailPrereqs = document.getElementById("detail-prereq-list");
+        const detailLockedHint = document.getElementById("detail-locked-hint");
+        const courseDisplayName = document.getElementById("course-display-name");
+
+        const progressBarFill = document.getElementById("progress-bar-fill");
+        const overallProgressText = document.getElementById("overall-progress-text");
+        const progressSubtitle = document.getElementById("progress-summary-subtitle");
+        const statCompleted = document.getElementById("stat-completed-count");
+        const statPending = document.getElementById("stat-pending-count");
+        const statInProgress = document.getElementById("stat-inprogress-count");
+        const statAttention = document.getElementById("stat-attention-count");
+        const statNotStarted = document.getElementById("stat-notstarted-count");
+        const statLocked = document.getElementById("stat-locked-count");
+
+        function showToast(message) {
+            const toast = document.getElementById("sync-toast");
+            const msgSpan = document.getElementById("sync-toast-message");
+            if (toast && msgSpan) {
+                msgSpan.textContent = message;
+                toast.classList.add("visible");
+                setTimeout(() => {
+                    toast.classList.remove("visible");
+                }, 2200);
+            }
+        }
+
+        function getStatusClass(status) {
+            return String(status || "Not Started").toLowerCase().replace(/\s+/g, "-");
+        }
+
+        function applyDataToUI(data) {
+            if (!data) return;
+
+            if (courseDisplayName) {
+                courseDisplayName.textContent = data.course_name;
+            }
+            document.title = "Learnly | " + data.course_name + " - Knowledge Graph";
+
+            const stats = data.stats;
+            if (stats) {
+                if (progressBarFill) progressBarFill.style.width = stats.percentage + "%";
+                if (overallProgressText) overallProgressText.textContent = stats.percentage + "%";
+                if (progressSubtitle) progressSubtitle.textContent = `(${stats.completed} of ${stats.total} completed)`;
+                if (statCompleted) statCompleted.textContent = stats.completed ?? 0;
+                if (statPending) statPending.textContent = stats.assessment_pending ?? 0;
+                if (statInProgress) statInProgress.textContent = stats.in_progress ?? 0;
+                if (statAttention) statAttention.textContent = stats.needs_attention ?? 0;
+                if (statNotStarted) statNotStarted.textContent = stats.not_started ?? 0;
+                if (statLocked) statLocked.textContent = stats.locked ?? 0;
+            }
+
+            topicsState = {};
+            const listViewContainer = document.getElementById("topic-list-view");
+            if (listViewContainer) {
+                listViewContainer.replaceChildren();
+            }
+
+            data.topics.forEach((t, index) => {
+                topicsState[t.id] = t;
+
+                const nodeEl = document.getElementById("node-" + t.id);
+                if (nodeEl) {
+                    nodeEl.className = "topic-node " + (t.id === selectedTopicId ? " selected" : "");
+                    const titleSpan = nodeEl.querySelector(".topic-node-title");
+                    if (titleSpan) titleSpan.textContent = t.name;
+
+                    const tagSpan = document.getElementById("tag-" + t.id);
+                    if (tagSpan) {
+                        const displayTag = (t.mastery_state && t.mastery_state !== "Unassessed") ? t.mastery_state : t.status;
+                        tagSpan.className = "topic-node-status status-text " + getStatusClass(t.status);
+                        tagSpan.textContent = displayTag;
+                    }
+                }
+
+                if (listViewContainer) {
+                    const itemBtn = document.createElement("button");
+                    itemBtn.type = "button";
+                    itemBtn.className = "topic-list-item" + (t.id === selectedTopicId ? " selected" : "");
+                    itemBtn.setAttribute("data-id", t.id);
+
+                    const prereqText = (t.prerequisites && t.prerequisites.length > 0)
+                        ? "Complete first: " + t.prerequisites.join(", ")
+                        : "Ready to start (no prior topics needed)";
+
+                    const displayLabel = (t.mastery_state && t.mastery_state !== "Unassessed")
+                        ? `${t.status} (${t.mastery_state})`
+                        : t.status;
+
+                    const leftDiv = document.createElement("div");
+                    leftDiv.className = "topic-list-left";
+                    const numSpan = document.createElement("span");
+                    numSpan.className = "topic-list-number";
+                    numSpan.textContent = `${index + 1}.`;
+                    const boxDiv = document.createElement("div");
+                    boxDiv.className = "topic-list-title-box";
+                    const tSpan = document.createElement("span");
+                    tSpan.className = "topic-list-title";
+                    tSpan.textContent = t.name;
+                    const pSpan = document.createElement("span");
+                    pSpan.className = "topic-list-prereq-hint";
+                    pSpan.textContent = prereqText;
+                    boxDiv.appendChild(tSpan);
+                    boxDiv.appendChild(pSpan);
+                    leftDiv.appendChild(numSpan);
+                    leftDiv.appendChild(boxDiv);
+
+                    const statSpan = document.createElement("span");
+                    statSpan.className = "status-text " + getStatusClass(t.status);
+                    statSpan.textContent = displayLabel;
+
+                    itemBtn.appendChild(leftDiv);
+                    itemBtn.appendChild(statSpan);
+
+                    itemBtn.addEventListener("click", () => {
+                        selectTopic(t.id);
+                    });
+
+                    listViewContainer.appendChild(itemBtn);
+                }
+            });
+
+            if (!selectedTopicId || !topicsState[selectedTopicId]) {
+                if (data.topics && data.topics.length > 0) {
+                    selectedTopicId = data.topics[0].id;
+                }
+            }
+
+            if (selectedTopicId) {
+                selectTopic(selectedTopicId);
+            }
+        }
+
+        function selectTopic(topicId) {
+            selectedTopicId = Number(topicId);
+            const topic = topicsState[selectedTopicId];
+            if (!topic) return;
+
+            document.querySelectorAll(".topic-node").forEach(node => {
+                const isSelected = Number(node.dataset.id) === selectedTopicId;
+                node.classList.toggle("selected", isSelected);
+                node.setAttribute("aria-pressed", String(isSelected));
+            });
+
+            document.querySelectorAll(".topic-list-item").forEach(item => {
+                const isSelected = Number(item.getAttribute("data-id")) === selectedTopicId;
+                item.classList.toggle("selected", isSelected);
+                item.setAttribute("aria-pressed", String(isSelected));
+            });
+
+            document.querySelectorAll(".edge-path").forEach(path => {
+                const src = Number(path.dataset.source);
+                const tgt = Number(path.dataset.target);
+                const isConnected = (src === selectedTopicId || tgt === selectedTopicId);
+                path.classList.toggle("highlight", isConnected);
+                path.setAttribute("marker-end", isConnected ? "url(#arrow-highlight)" : "url(#arrow)");
+            });
+
+            if (detailTitle) detailTitle.textContent = topic.name;
+            if (detailStatusText) {
+                detailStatusText.textContent = topic.status;
+                detailStatusText.className = "status-text " + getStatusClass(topic.status);
+            }
+            if (detailMasteryWrap && detailMasteryText) {
+                const mState = topic.mastery_state || "Unassessed";
+                if (mState !== "Unassessed") {
+                    detailMasteryWrap.hidden = false;
+                    detailMasteryText.textContent = mState;
+                    detailMasteryText.className = "mastery-text " + mState.toLowerCase().replace(/\s+/g, "-");
+                } else {
+                    detailMasteryWrap.hidden = true;
+                }
+            }
+            if (detailPracticeLink) {
+                const cName = serverPathData ? serverPathData.course_name : "";
+                if (topic.status !== "Locked") {
+                    detailPracticeLink.style.display = "inline-flex";
+                    detailPracticeLink.href = `/study?topic_id=${encodeURIComponent(topic.id)}&course=${encodeURIComponent(cName)}`;
+                    if (topic.status === "Completed") {
+                        detailPracticeLink.textContent = "Review Topic \u2192";
+                    } else if (topic.status === "Assessment Pending") {
+                        detailPracticeLink.textContent = "Start Mastery Assessment \u2192";
+                    } else if (topic.status === "Needs Attention") {
+                        detailPracticeLink.textContent = "Revise & Retake \u2192";
+                    } else if (topic.status === "In Progress") {
+                        detailPracticeLink.textContent = "Continue Studying \u2192";
+                    } else {
+                        detailPracticeLink.textContent = "Study \u2192";
+                    }
+                } else {
+                    detailPracticeLink.style.display = "none";
+                }
+            }
+            if (detailDesc) detailDesc.textContent = topic.description || "";
+            if (detailLockedHint) {
+                detailLockedHint.hidden = (topic.status !== "Locked");
+            }
+
+            if (detailPrereqs) {
+                detailPrereqs.replaceChildren();
+                if (!topic.prerequisites || topic.prerequisites.length === 0) {
+                    const li = document.createElement("li");
+                    li.className = "empty";
+                    li.textContent = "None \u2014 ready to start anytime";
+                    detailPrereqs.appendChild(li);
+                } else {
+                    topic.prerequisites.forEach(prereqName => {
+                        const li = document.createElement("li");
+                        li.textContent = prereqName;
+                        detailPrereqs.appendChild(li);
+                    });
+                }
+            }
+        }
+
+        async function fetchFreshPath() {
+            try {
+                const courseName = (courseDisplayName ? courseDisplayName.textContent.trim() : "");
+                const res = await fetch(`/api/learning-path?course=${encodeURIComponent(courseName)}`);
+                if (res.ok) {
+                    const freshData = await res.json();
+                    serverPathData = freshData;
+                    applyDataToUI(freshData);
+                }
+            } catch (err) {
+                console.error("Failed to refresh learning path:", err);
+            }
+        }
+
+        document.addEventListener("click", (e) => {
+            const nodeBtn = e.target.closest(".topic-node");
+            if (nodeBtn && nodeBtn.dataset.id) {
+                selectTopic(nodeBtn.dataset.id);
+            }
+        });
+
+        const btnViewList = document.getElementById("btn-view-list");
+        const btnViewFlow = document.getElementById("btn-view-flow");
+        const topicListView = document.getElementById("topic-list-view");
+        const flowCanvasArea = document.getElementById("flow-canvas-area");
+        const flowLegend = document.getElementById("flow-legend");
+        const viewSectionTitle = document.getElementById("view-section-title");
+        const viewSectionDesc = document.getElementById("view-section-desc");
+
+        if (btnViewList && btnViewFlow && topicListView && flowCanvasArea) {
+            btnViewList.addEventListener("click", () => {
+                btnViewList.classList.add("active");
+                btnViewList.setAttribute("aria-selected", "true");
+                btnViewFlow.classList.remove("active");
+                btnViewFlow.setAttribute("aria-selected", "false");
+
+                topicListView.style.display = "flex";
+                flowCanvasArea.style.display = "none";
+                if (flowLegend) flowLegend.style.display = "none";
+
+                if (viewSectionTitle) viewSectionTitle.textContent = "Topics";
+                if (viewSectionDesc) viewSectionDesc.textContent = "Click any topic to check prerequisites and open study materials.";
+            });
+
+            btnViewFlow.addEventListener("click", () => {
+                btnViewFlow.classList.add("active");
+                btnViewFlow.setAttribute("aria-selected", "true");
+                btnViewList.classList.remove("active");
+                btnViewList.setAttribute("aria-selected", "false");
+
+                flowCanvasArea.style.display = "flex";
+                topicListView.style.display = "none";
+                if (flowLegend) flowLegend.style.display = "flex";
+
+                if (viewSectionTitle) viewSectionTitle.textContent = "Topic Diagram";
+                if (viewSectionDesc) viewSectionDesc.textContent = "Arrows show which topics must be completed before unlocking the next one.";
+            });
+        }
+
+        if (serverPathData) {
+            applyDataToUI(serverPathData);
+        } else {
+            fetchFreshPath();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,140 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Profile Setup | Learnly</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='module1.css') }}">
+</head>
+<body>
+
+    <header class="module1-header">
+        <a href="{{ url_for('home') }}" class="module1-logo">
+            Learnly
+        </a>
+
+        <span>Profile Setup</span>
+    </header>
+
+    <main class="module1-container">
+
+        <section class="module1-card">
+
+            <p class="module1-step">MODULE 1 · PROFILE SETUP</p>
+
+            <h1>Let's set up your learning profile</h1>
+
+            <p class="module1-description">
+                Tell us about yourself and choose your learning preferences
+                before beginning the knowledge assessment.
+            </p>
+
+            <form action="{{ url_for('profile') }}" method="POST">
+
+                <div class="module1-field">
+                    <label for="learner-name">Your name</label>
+
+                    <input
+                        type="text"
+                        id="learner-name"
+                        name="name"
+                        placeholder="Enter your name"
+                        maxlength="60"
+                        required
+                    >
+                </div>
+
+                <fieldset class="module1-field">
+                    <legend>What is your current experience level?</legend>
+
+                    <label class="module1-option">
+                        <input
+                            type="radio"
+                            name="level"
+                            value="Beginner"
+                            required
+                        >
+                        <span>
+                            <strong>Beginner</strong>
+                            <small>I'm learning the basics.</small>
+                        </span>
+                    </label>
+
+                    <label class="module1-option">
+                        <input
+                            type="radio"
+                            name="level"
+                            value="Intermediate"
+                        >
+                        <span>
+                            <strong>Intermediate</strong>
+                            <small>I know the basics and want to improve.</small>
+                        </span>
+                    </label>
+
+                    <label class="module1-option">
+                        <input
+                            type="radio"
+                            name="level"
+                            value="Advanced"
+                        >
+                        <span>
+                            <strong>Advanced</strong>
+                            <small>I want to strengthen my existing knowledge.</small>
+                        </span>
+                    </label>
+                </fieldset>
+
+                <div class="module1-field">
+                    <label for="learning-goal">Learning goal</label>
+
+                    <select id="learning-goal" name="goal" required>
+                        <option value="">Select a learning goal</option>
+
+                        <option value="Python Programming"
+                            {% if selected_goal == "Python Programming" %}selected{% endif %}>
+                            Python Programming
+                        </option>
+
+                        <option value="Data Structures"
+                            {% if selected_goal == "Data Structures" %}selected{% endif %}>
+                            Data Structures &amp; Algorithms
+                        </option>
+
+                        <option value="Web Development"
+                            {% if selected_goal == "Web Development" %}selected{% endif %}>
+                            Web Development
+                        </option>
+
+                        <option value="Java Programming"
+                            {% if selected_goal == "Java Programming" %}selected{% endif %}>
+                            Java Programming
+                        </option>
+                    </select>
+                </div>
+
+                {% if error %}
+                    <p class="module1-error" role="alert">
+                        {{ error }}
+                    </p>
+                {% endif %}
+
+                <button type="submit" class="module1-button">
+                    Continue to Assessment
+                </button>
+
+            </form>
+
+        </section>
+
+    </main>
+
+</body>
+</html>

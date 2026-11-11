@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learnly | Knowledge Graph</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        :root {
+            --status-completed: #15803d;
+            --status-inprogress: #b45309;
+            --status-available: #0369a1;
+            --status-locked: #64748b;
+        }
+
+        .page-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        /* Course Progress Summary */
+        .progress-summary-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 18px 22px;
+            margin-bottom: 24px;
+        }
+
+        .progress-summary-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .progress-summary-title {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+        }
+
+        .progress-summary-title h2 {
+            font-size: 16px;
+            font-weight: 700;
+            margin: 0;
+            color: var(--text);
+        }
+
+        .progress-summary-title span {
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .progress-summary-percent {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--blue);
+        }
+
+        .progress-track-wrapper {
+            position: relative;
+            height: 8px;
+            background: #EEF2F6;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 14px;
+        }
+
+        .progress-fill-bar {
+            height: 100%;
+            background: var(--blue);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .progress-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #EEF2F6;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+            font-size: 13px;
+        }
+
+        .stat-number {
+            font-weight: 700;
+            font-size: 15px;
+            color: var(--text);
+        }
+
+        .stat-label-text {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .stat-label-text.completed { color: var(--status-completed); }
+        .stat-label-text.inprogress { color: var(--status-inprogress); }
+        .stat-label-text.available { color: var(--status-available); }
+        .stat-label-text.locked { color: var(--status-locked); }
+
+        /* Workspace Grid */
+        .workspace-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 320px;
+            gap: 20px;
+            align-items: start;
+        }
+
+        .panel-box {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .panel-box-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            background: #FAFCFD;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .panel-box-header h2 {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text);
+            margin: 0;
+        }
+
+        .panel-box-header p {
+            margin: 3px 0 0;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        /* View Toggle Switcher */
+        .view-switch-tabs {
+            display: inline-flex;
+            background: #EEF2F6;
+            padding: 3px;
+            border-radius: 4px;
+            gap: 2px;
+        }
+
+        .view-switch-btn {
+            border: none;
+            background: transparent;
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--muted);
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .view-switch-btn:hover {
+            color: var(--text);
+        }
+
+        .view-switch-btn.active {
+            background: var(--white);
+            color: var(--text);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Topic List View */
+        .topic-list-container {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: var(--white);
+            min-height: 480px;
+        }
+
+        .topic-list-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: border-color 0.15s ease, background-color 0.15s ease;
+            text-align: left;
+            width: 100%;
+            font-family: inherit;
+        }
+
+        .topic-list-item:hover {
+            border-color: var(--blue);
+            background: #FAFCFD;
+        }
+
+        .topic-list-item.selected {
+            border-color: var(--blue);
+            background: #F0FDFD;
+            box-shadow: 0 0 0 1px var(--blue);
+        }
+
+        .topic-list-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .topic-list-number {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--muted);
+            min-width: 24px;
+        }
+
+        .topic-list-title-box {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .topic-list-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .topic-list-prereq-hint {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        /* Status Text Badge */
+        .status-text {
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .status-text.completed { color: var(--status-completed); }
+        .status-text.in-progress { color: var(--status-inprogress); }
+        .status-text.available { color: var(--status-available); }
+        .status-text.locked { color: var(--status-locked); }
+
+        /* Canvas / Graph Area */
+        .path-canvas-area {
+            position: relative;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding: 20px 16px;
+            background: #FAFCFD;
+            min-height: 500px;
+            display: flex;
+            justify-content: center;
+            border-top: 1px solid #EEF2F6;
+        }
+
+        .path-canvas {
+            position: relative;
+            width: 680px;
+            height: 480px;
+            flex-shrink: 0;
+        }
+
+        .path-connections-svg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .path-arrow-line {
+            fill: none;
+            stroke: #94A3B8;
+            stroke-width: 1.8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            transition: stroke 0.2s ease, stroke-width 0.2s ease;
+        }
+
+        .path-arrow-line.highlight {
+            stroke: var(--blue);
+            stroke-width: 2.4;
+        }
+
+        /* Topic Node Card Styles */
+        .topic-node {
+            position: absolute;
+            width: 180px;
+            min-height: 72px;
+            padding: 10px 12px;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            text-align: left;
+            cursor: pointer;
+            z-index: 2;
+            transition: all 0.15s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            font-family: inherit;
+        }
+
+        .topic-node:hover {
+            border-color: var(--blue);
+            background: #FAFCFD;
+        }
+
+        .topic-node.selected {
+            border-color: var(--blue);
+            background: #F0FDFD;
+            box-shadow: 0 0 0 1px var(--blue);
+        }
+
+        .topic-node-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            line-height: 1.35;
+        }
+
+        .topic-node-status {
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 6px;
+        }
+
+        /* Legend Footer */
+        .path-legend {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 18px;
+            padding: 12px 20px;
+            background: #FAFCFD;
+            border-top: 1px solid var(--border);
+            font-size: 12px;
+        }
+
+        .legend-title {
+            font-weight: 700;
+            color: var(--muted);
+        }
+
+        .legend-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+        }
+
+        .legend-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 2px;
+        }
+
+        .legend-indicator.completed { background: var(--status-completed); }
+        .legend-indicator.inprogress { background: var(--status-inprogress); }
+        .legend-indicator.available { background: var(--status-available); }
+        .legend-indicator.locked { background: var(--status-locked); }
+
+        /* Detail Sidebar Panel */
+        .detail-card-body {
+            padding: 20px;
+        }
+
+        .detail-label-eyebrow {
+            margin: 0 0 4px;
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .detail-topic-title {
+            margin: 0 0 10px;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1.3;
+        }
+
+        .detail-status-line {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 14px;
+        }
+
+        .detail-desc-text {
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.55;
+            margin: 0 0 16px;
+        }
+
+        .detail-meta-group {
+            padding: 12px 0;
+            border-top: 1px solid #EEF2F6;
+        }
+
+        .detail-meta-group h3 {
+            margin: 0 0 6px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .prereq-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            font-size: 13px;
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .prereq-list li {
+            padding-left: 10px;
+            border-left: 2px solid var(--border);
+        }
+
+        .prereq-list li.empty {
+            border-left: none;
+            padding-left: 0;
+            color: var(--muted);
+            font-style: italic;
+        }
+
+        .detail-actions {
+            margin-top: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .detail-btn-action,
+        .detail-btn-secondary {
+            width: 100%;
+        }
+
+        /* Floating Sync Toast */
+        .sync-toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 10px 16px;
+            background: #172033;
+            color: #FFFFFF;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-size: 13px;
+            z-index: 999;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.2s ease;
+            pointer-events: none;
+        }
+
+        .sync-toast.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @media (max-width: 900px) {
+            .workspace-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .progress-stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .page-header-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .progress-stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <header class="navbar">
+        <a href="{{ url_for('home') }}" class="logo">
+            Learn<span>ly</span>
+        </a>
+
+        <div class="nav-links-cluster">
+            <a href="{{ url_for('module3', course=course) }}" class="nav-tab-link active" title="Knowledge Graph">
+                Knowledge Graph
+            </a>
+            <a href="{{ url_for('module4', course=course) }}" class="nav-tab-link" title="Skill Gaps">
+                Skill Gaps
+            </a>
+            <a href="{{ url_for('module5', course=course) }}" class="nav-tab-link" title="Learning Path">
+                Learning Path
+            </a>
+            <a href="{{ url_for('module6') }}" class="nav-tab-link" title="My Progress">
+                My Progress
+            </a>
+            <a href="{{ url_for('home') }}" class="nav-tab-link" title="Return to Dashboard">
+                &larr; Dashboard
+            </a>
+        </div>
+    </header>
+
+    <main>
+
+        <!-- PAGE HEADER & COURSE SELECTOR -->
+        <div class="page-header-row">
+            <div>
+                <p class="eyebrow">Knowledge Graph</p>
+                <h1 style="font-size: clamp(26px, 4vw, 34px); font-weight: 800; letter-spacing: -0.7px; margin-bottom: 6px;">
+                    Course Knowledge Graph
+                </h1>
+                <p style="color: var(--muted); margin: 0; font-size: 14px;">
+                    Current Course: <strong id="course-display-name" style="color: var(--text);">{{ path_data.course_name if path_data else course }}</strong>
+                </p>
+            </div>
+
+            {% if all_courses %}
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <label for="course-select" style="font-size: 13px; font-weight: 600; color: var(--muted);">Switch Course:</label>
+                <select id="course-select" onchange="location.href='/module3?course=' + encodeURIComponent(this.value);" style="padding: 7px 12px; border-radius: 4px; border: 1px solid var(--border); background: var(--white); font-size: 13px; font-weight: 600; color: var(--text); cursor: pointer;">
+                    {% for c in all_courses %}
+                    <option value="{{ c['name'] }}" {% if (path_data and c['name'] == path_data.course_name) or c['name'] == course %}selected{% endif %}>
+                        {{ c['name'] }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- PROGRESS & COMPLETION SUMMARY -->
+        <section class="progress-summary-card" aria-label="Course completion summary">
+            <div class="progress-summary-header">
+                <div class="progress-summary-title">
+                    <h2>Course Completion</h2>
+                    <span id="progress-summary-subtitle">(0 of 6 topics completed)</span>
+                </div>
+                <div class="progress-summary-percent" id="overall-progress-text">0% Completed</div>
+            </div>
+
+            <div class="progress-track-wrapper" role="progressbar" aria-label="Overall learning path progress" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                <div class="progress-fill-bar" id="progress-bar-fill" style="width: 0%;"></div>
+            </div>
+
+            <div class="progress-stats-grid">
+                <div class="stat-item">
+                    <span class="stat-number" id="stat-completed-count">0</span>
+                    <span class="stat-label-text completed">Completed</span>
+                </div>
+
+                <div class="stat-item">
+                    <span class="stat-number" id="stat-inprogress-count">0</span>
+                    <span class="stat-label-text inprogress">In Progress</span>
+                </div>
+
+                <div class="stat-item">
+                    <span class="stat-number" id="stat-available-count">0</span>
+                    <span class="stat-label-text available">Available</span>
+                </div>
+
+                <div class="stat-item">
+                    <span class="stat-number" id="stat-locked-count">0</span>
+                    <span class="stat-label-text locked">Locked</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- MAIN WORKSPACE: GRAPH ON LEFT, DETAILS ON RIGHT -->
+        <div class="workspace-grid">
+
+            <!-- LEFT PANEL: CONNECTED PREREQUISITE GRAPH -->
+            <section class="panel-box" aria-label="Topic dependency graph">
+                <div class="panel-box-header">
+                    <div>
+                        <h2 id="view-section-title">Topic Curriculum</h2>
+                        <p id="view-section-desc">View as a structured list or examine prerequisite connections in the diagram.</p>
+                    </div>
+                    <div class="view-switch-tabs" role="tablist" aria-label="Display mode">
+                        <button type="button" class="view-switch-btn active" id="btn-view-list" role="tab" aria-selected="true">
+                            Numbered List
+                        </button>
+                        <button type="button" class="view-switch-btn" id="btn-view-flow" role="tab" aria-selected="false">
+                            Flow Diagram
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 1. NUMBERED TOPIC LIST VIEW -->
+                <div class="topic-list-container" id="topic-list-view">
+                    <!-- Dynamically populated -->
+                </div>
+
+                <!-- 2. FLOW MAP CANVAS AREA -->
+                <div class="path-canvas-area" id="flow-canvas-area" style="display: none;">
+                    {% if path_data and path_data.graph and path_data.graph.has_cycle %}
+                    <div style="padding: 20px; background: #FEF2F2; border: 1px solid #FCA5A5; border-radius: 4px; color: #991B1B; margin: 20px auto; max-width: 480px; text-align: center;">
+                        <h3 style="margin: 0 0 6px; font-size: 15px;">Prerequisite Cycle Detected</h3>
+                        <p style="margin: 0; font-size: 13px;">This course has circular topic prerequisites. Please check configuration.</p>
+                    </div>
+                    {% elif path_data and path_data.graph %}
+                    <div class="path-canvas" id="path-canvas" style="width: {{ path_data.graph.width }}px; height: {{ path_data.graph.height }}px;">
+
+                        <!-- SVG CONNECTIONS WITH ARROWHEADS -->
+                        <svg class="path-connections-svg" id="path-connections-svg" viewBox="0 0 {{ path_data.graph.width }} {{ path_data.graph.height }}" aria-hidden="true">
+                            <defs>
+                                <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5"
+                                        markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                                    <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#94A3B8" />
+                                </marker>
+                                <marker id="arrow-highlight" viewBox="0 0 10 10" refX="8" refY="5"
+                                        markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                                    <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#31c6cb" />
+                                </marker>
+                            </defs>
+
+                            {% for edge in path_data.graph.edges %}
+                            <path class="path-arrow-line edge-path"
+                                  id="edge-{{ edge.source_id }}-{{ edge.target_id }}"
+                                  data-source="{{ edge.source_id }}"
+                                  data-target="{{ edge.target_id }}"
+                                  d="{{ edge.path_d }}"
+                                  marker-end="url(#arrow)" />
+                            {% endfor %}
+                        </svg>
+
+                        <!-- TOPIC NODES -->
+                        <div id="nodes-container">
+                            {% for node in path_data.graph.nodes %}
+                            <button type="button"
+                                    class="topic-node status-{{ node.status_class }} {% if loop.first %}selected{% endif %}"
+                                    id="node-{{ node.id }}"
+                                    data-id="{{ node.id }}"
+                                    style="left: {{ node.x }}px; top: {{ node.y }}px;"
+                                    aria-pressed="{% if loop.first %}true{% else %}false{% endif %}">
+                                <span class="topic-node-title">{{ node.name }}</span>
+                                <span class="topic-node-status status-text {{ node.status | lower | replace(' ', '-') }}" id="tag-{{ node.id }}">
+                                    {{ node.status }}
+                                </span>
+                            </button>
+                            {% endfor %}
+                        </div>
+
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- LEGEND -->
+                <div class="path-legend" aria-label="Status legend">
+                    <span class="legend-title">Status:</span>
+                    <div class="legend-chip">
+                        <span class="legend-indicator completed"></span>
+                        <span>Completed</span>
+                    </div>
+                    <div class="legend-chip">
+                        <span class="legend-indicator inprogress"></span>
+                        <span>In Progress</span>
+                    </div>
+                    <div class="legend-chip">
+                        <span class="legend-indicator available"></span>
+                        <span>Available</span>
+                    </div>
+                    <div class="legend-chip">
+                        <span class="legend-indicator locked"></span>
+                        <span>Locked</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- RIGHT PANEL: TOPIC DETAILS & ACTIONS -->
+            <aside class="panel-box" aria-label="Selected topic details">
+                <div class="panel-box-header">
+                    <h2>Topic Details</h2>
+                </div>
+
+                <div class="detail-card-body">
+                    <p class="detail-label-eyebrow">Selected Topic</p>
+                    <h3 class="detail-topic-title" id="detail-topic-name">Topic Name</h3>
+
+                    <p class="detail-status-line">
+                        Status: <span id="detail-status-text" class="status-text available">Available</span>
+                    </p>
+
+                    <p class="detail-desc-text" id="detail-description">
+                        Select a topic from the curriculum to view prerequisites and options.
+                    </p>
+
+                    <div class="detail-meta-group">
+                        <h3>Prerequisites</h3>
+                        <ul class="prereq-list" id="detail-prereq-list">
+                            <li class="empty">None (Foundation topic)</li>
+                        </ul>
+                    </div>
+
+                    <div class="detail-meta-group">
+                        <h3>Why It Matters</h3>
+                        <p class="detail-desc-text" id="detail-importance" style="margin-bottom: 0;">
+                            Essential concept for this course curriculum.
+                        </p>
+                    </div>
+
+                    <div class="detail-actions">
+                        <button type="button" class="btn-primary detail-btn-action" id="detail-action-btn">
+                            Mark as In Progress
+                        </button>
+                        <button type="button" class="btn-secondary detail-btn-secondary" id="detail-complete-btn">
+                            Mark as Completed
+                        </button>
+                    </div>
+                </div>
+            </aside>
+
+        </div>
+
+    </main>
+
+    <!-- FLOATING SYNC TOAST -->
+    <div id="sync-toast" class="sync-toast">
+        <span id="sync-toast-message">Progress saved</span>
+    </div>
+
+    <footer>
+        <p>Learnly | Personalized Learning</p>
+    </footer>
+
+    <!-- INTERACTIVITY & DATABASE SYNC SCRIPT -->
+    <script>
+        let serverPathData = {{ path_data | tojson if path_data else 'null' }};
+        const isLoggedIn = {{ is_logged_in | tojson }};
+
+        let topicsState = {};
+        let selectedTopicId = null;
+
+        const detailTitle = document.getElementById("detail-topic-name");
+        const detailStatusText = document.getElementById("detail-status-text");
+        const detailDesc = document.getElementById("detail-description");
+        const detailPrereqs = document.getElementById("detail-prereq-list");
+        const detailImportance = document.getElementById("detail-importance");
+        const detailActionBtn = document.getElementById("detail-action-btn");
+        const detailCompleteBtn = document.getElementById("detail-complete-btn");
+        const courseDisplayName = document.getElementById("course-display-name");
+
+        const progressBarFill = document.getElementById("progress-bar-fill");
+        const overallProgressText = document.getElementById("overall-progress-text");
+        const progressSubtitle = document.getElementById("progress-summary-subtitle");
+        const statCompleted = document.getElementById("stat-completed-count");
+        const statInProgress = document.getElementById("stat-inprogress-count");
+        const statAvailable = document.getElementById("stat-available-count");
+        const statLocked = document.getElementById("stat-locked-count");
+
+        function showToast(message) {
+            const toast = document.getElementById("sync-toast");
+            const msgSpan = document.getElementById("sync-toast-message");
+            if (toast && msgSpan) {
+                msgSpan.textContent = message;
+                toast.classList.add("visible");
+                setTimeout(() => {
+                    toast.classList.remove("visible");
+                }, 2200);
+            }
+        }
+
+        function getStatusClass(status) {
+            if (status === "Completed") return "completed";
+            if (status === "In Progress") return "in-progress";
+            if (status === "Available") return "available";
+            return "locked";
+        }
+
+        function applyDataToUI(data) {
+            if (!data) return;
+
+            if (courseDisplayName) {
+                courseDisplayName.textContent = data.course_name;
+            }
+            document.title = "Learnly | " + data.course_name + " - Knowledge Graph";
+
+            const stats = data.stats;
+            if (stats) {
+                if (progressBarFill) progressBarFill.style.width = stats.percentage + "%";
+                if (overallProgressText) overallProgressText.textContent = stats.percentage + "% Completed";
+                if (progressSubtitle) progressSubtitle.textContent = `(${stats.completed} of ${stats.total} topics completed)`;
+                if (statCompleted) statCompleted.textContent = stats.completed;
+                if (statInProgress) statInProgress.textContent = stats.in_progress;
+                if (statAvailable) statAvailable.textContent = stats.available;
+                if (statLocked) statLocked.textContent = stats.locked;
+            }
+
+            topicsState = {};
+            const listViewContainer = document.getElementById("topic-list-view");
+            if (listViewContainer) {
+                listViewContainer.replaceChildren();
+            }
+
+            data.topics.forEach((t, index) => {
+                topicsState[t.id] = t;
+
+                const nodeEl = document.getElementById("node-" + t.id);
+                if (nodeEl) {
+                    nodeEl.className = "topic-node " + (t.id === selectedTopicId ? " selected" : "");
+                    const titleSpan = nodeEl.querySelector(".topic-node-title");
+                    if (titleSpan) titleSpan.textContent = t.name;
+
+                    const tagSpan = document.getElementById("tag-" + t.id);
+                    if (tagSpan) {
+                        tagSpan.className = "topic-node-status status-text " + getStatusClass(t.status);
+                        tagSpan.textContent = t.status;
+                    }
+                }
+
+                if (listViewContainer) {
+                    const itemBtn = document.createElement("button");
+                    itemBtn.type = "button";
+                    itemBtn.className = "topic-list-item" + (t.id === selectedTopicId ? " selected" : "");
+                    itemBtn.setAttribute("data-id", t.id);
+
+                    const prereqText = (t.prerequisites && t.prerequisites.length > 0)
+                        ? "Requires: " + t.prerequisites.join(", ")
+                        : "Foundation topic (No prerequisites)";
+
+                    itemBtn.innerHTML = `
+                        <div class="topic-list-left">
+                            <span class="topic-list-number">${index + 1}.</span>
+                            <div class="topic-list-title-box">
+                                <span class="topic-list-title">${t.name}</span>
+                                <span class="topic-list-prereq-hint">${prereqText}</span>
+                            </div>
+                        </div>
+                        <span class="status-text ${getStatusClass(t.status)}">
+                            ${t.status}
+                        </span>
+                    `;
+
+                    itemBtn.addEventListener("click", () => {
+                        selectTopic(t.id);
+                    });
+
+                    listViewContainer.appendChild(itemBtn);
+                }
+            });
+
+            if (!selectedTopicId || !topicsState[selectedTopicId]) {
+                if (data.topics && data.topics.length > 0) {
+                    selectedTopicId = data.topics[0].id;
+                }
+            }
+
+            if (selectedTopicId) {
+                selectTopic(selectedTopicId);
+            }
+        }
+
+        function selectTopic(topicId) {
+            selectedTopicId = Number(topicId);
+            const topic = topicsState[selectedTopicId];
+            if (!topic) return;
+
+            document.querySelectorAll(".topic-node").forEach(node => {
+                const isSelected = Number(node.dataset.id) === selectedTopicId;
+                node.classList.toggle("selected", isSelected);
+                node.setAttribute("aria-pressed", String(isSelected));
+            });
+
+            document.querySelectorAll(".topic-list-item").forEach(item => {
+                const isSelected = Number(item.getAttribute("data-id")) === selectedTopicId;
+                item.classList.toggle("selected", isSelected);
+                item.setAttribute("aria-pressed", String(isSelected));
+            });
+
+            document.querySelectorAll(".edge-path").forEach(path => {
+                const src = Number(path.dataset.source);
+                const tgt = Number(path.dataset.target);
+                const isConnected = (src === selectedTopicId || tgt === selectedTopicId);
+                path.classList.toggle("highlight", isConnected);
+                path.setAttribute("marker-end", isConnected ? "url(#arrow-highlight)" : "url(#arrow)");
+            });
+
+            if (detailTitle) detailTitle.textContent = topic.name;
+            if (detailStatusText) {
+                detailStatusText.textContent = topic.status;
+                detailStatusText.className = "status-text " + getStatusClass(topic.status);
+            }
+            if (detailDesc) detailDesc.textContent = topic.description || "Foundational concepts and practical applications for this curriculum topic.";
+            if (detailImportance) {
+                detailImportance.textContent = "Builds essential understanding required for real-world projects and subsequent curriculum topics in " + (serverPathData ? serverPathData.course_name : "this course") + ".";
+            }
+
+            if (detailActionBtn && detailCompleteBtn) {
+                if (topic.status === "Locked") {
+                    detailActionBtn.textContent = "Prerequisites Required";
+                    detailActionBtn.disabled = true;
+                    detailActionBtn.className = "btn-secondary detail-btn-action";
+                    detailCompleteBtn.style.display = "none";
+                } else if (topic.status === "Completed") {
+                    detailActionBtn.textContent = "Topic Completed";
+                    detailActionBtn.disabled = true;
+                    detailActionBtn.className = "btn-secondary detail-btn-action";
+                    detailCompleteBtn.style.display = "none";
+                } else if (topic.status === "In Progress") {
+                    detailActionBtn.textContent = "Currently In Progress";
+                    detailActionBtn.disabled = true;
+                    detailActionBtn.className = "btn-secondary detail-btn-action";
+                    detailCompleteBtn.style.display = "block";
+                    detailCompleteBtn.textContent = "Mark as Completed";
+                } else {
+                    detailActionBtn.textContent = "Start Topic (In Progress)";
+                    detailActionBtn.disabled = false;
+                    detailActionBtn.className = "btn-primary detail-btn-action";
+                    detailCompleteBtn.style.display = "block";
+                    detailCompleteBtn.textContent = "Mark as Completed";
+                }
+            }
+
+            if (detailPrereqs) {
+                detailPrereqs.replaceChildren();
+                if (!topic.prerequisites || topic.prerequisites.length === 0) {
+                    const li = document.createElement("li");
+                    li.className = "empty";
+                    li.textContent = "None (Foundation topic)";
+                    detailPrereqs.appendChild(li);
+                } else {
+                    topic.prerequisites.forEach(prereqName => {
+                        const li = document.createElement("li");
+                        li.textContent = prereqName;
+                        detailPrereqs.appendChild(li);
+                    });
+                }
+            }
+        }
+
+        async function updateProgressInDatabase(topicId, status) {
+            try {
+                const response = await fetch("/api/topic-progress", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ topic_id: topicId, status: status })
+                });
+
+                if (response.status === 401) {
+                    alert("Please log in to save your learning progress.");
+                    return;
+                }
+
+                const resData = await response.json();
+                if (resData.success) {
+                    showToast(`Saved: ${status}`);
+                    fetchFreshPath();
+                } else {
+                    alert(resData.error || "Failed to save progress");
+                }
+            } catch (err) {
+                console.error("Error saving progress:", err);
+                showToast("Network error saving progress");
+            }
+        }
+
+        async function fetchFreshPath() {
+            try {
+                const courseName = (courseDisplayName ? courseDisplayName.textContent.trim() : "");
+                const res = await fetch(`/api/learning-path?course=${encodeURIComponent(courseName)}`);
+                if (res.ok) {
+                    const freshData = await res.json();
+                    serverPathData = freshData;
+                    applyDataToUI(freshData);
+                }
+            } catch (err) {
+                console.error("Failed to refresh learning path:", err);
+            }
+        }
+
+        document.addEventListener("click", (e) => {
+            const nodeBtn = e.target.closest(".topic-node");
+            if (nodeBtn && nodeBtn.dataset.id) {
+                selectTopic(nodeBtn.dataset.id);
+            }
+        });
+
+        if (detailActionBtn) {
+            detailActionBtn.addEventListener("click", () => {
+                const topic = topicsState[selectedTopicId];
+                if (topic && topic.status === "Available") {
+                    updateProgressInDatabase(selectedTopicId, "In Progress");
+                }
+            });
+        }
+
+        if (detailCompleteBtn) {
+            detailCompleteBtn.addEventListener("click", () => {
+                const topic = topicsState[selectedTopicId];
+                if (topic && (topic.status === "Available" || topic.status === "In Progress")) {
+                    updateProgressInDatabase(selectedTopicId, "Completed");
+                }
+            });
+        }
+
+        const btnViewList = document.getElementById("btn-view-list");
+        const btnViewFlow = document.getElementById("btn-view-flow");
+        const topicListView = document.getElementById("topic-list-view");
+        const flowCanvasArea = document.getElementById("flow-canvas-area");
+        const viewSectionTitle = document.getElementById("view-section-title");
+        const viewSectionDesc = document.getElementById("view-section-desc");
+
+        if (btnViewList && btnViewFlow && topicListView && flowCanvasArea) {
+            btnViewList.addEventListener("click", () => {
+                btnViewList.classList.add("active");
+                btnViewList.setAttribute("aria-selected", "true");
+                btnViewFlow.classList.remove("active");
+                btnViewFlow.setAttribute("aria-selected", "false");
+
+                topicListView.style.display = "flex";
+                flowCanvasArea.style.display = "none";
+
+                if (viewSectionTitle) viewSectionTitle.textContent = "Topic Curriculum";
+                if (viewSectionDesc) viewSectionDesc.textContent = "View as a structured list or examine prerequisite connections in the diagram.";
+            });
+
+            btnViewFlow.addEventListener("click", () => {
+                btnViewFlow.classList.add("active");
+                btnViewFlow.setAttribute("aria-selected", "true");
+                btnViewList.classList.remove("active");
+                btnViewList.setAttribute("aria-selected", "false");
+
+                flowCanvasArea.style.display = "flex";
+                topicListView.style.display = "none";
+
+                if (viewSectionTitle) viewSectionTitle.textContent = "Prerequisite Flow";
+                if (viewSectionDesc) viewSectionDesc.textContent = "Arrow lines indicate prerequisite topics required before advancing.";
+            });
+        }
+
+        if (serverPathData) {
+            applyDataToUI(serverPathData);
+        } else {
+            fetchFreshPath();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,1249 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learnly | Personalized Learning</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        /* Account screen */
+        .account-page {
+            padding: 48px 20px;
+            min-height: 70vh;
+        }
+
+        .account-container {
+            width: 100%;
+            max-width: 460px;
+            margin: 0 auto;
+        }
+
+        .account-card {
+            padding: 30px;
+            background: #ffffff;
+            border: 1px solid #dce3e8;
+            border-radius: 8px;
+        }
+
+        .account-card h1 {
+            margin-bottom: 8px;
+        }
+
+        .account-description {
+            margin-bottom: 24px;
+            color: #5f6b75;
+            line-height: 1.6;
+        }
+
+        .account-tabs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .account-tab {
+            padding: 12px;
+            border: 1px solid #cbd5dd;
+            border-radius: 4px;
+            background: #ffffff;
+            color: #263746;
+            cursor: pointer;
+            font: inherit;
+        }
+
+        .account-tab.active {
+            background: #1f4959;
+            border-color: #1f4959;
+            color: #ffffff;
+        }
+
+        .account-field {
+            margin-bottom: 18px;
+        }
+
+        .account-field label {
+            display: block;
+            margin-bottom: 7px;
+            font-weight: 600;
+        }
+
+        .account-field input {
+            box-sizing: border-box;
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5dd;
+            border-radius: 4px;
+            font: inherit;
+        }
+
+        .account-field input:focus {
+            outline: 2px solid #5c7c89;
+            outline-offset: 1px;
+        }
+
+        .account-submit {
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        .account-error {
+            padding: 12px;
+            margin-bottom: 18px;
+            border: 1px solid #d9a4a4;
+            background: #fff5f5;
+            color: #8a2525;
+            border-radius: 4px;
+        }
+
+        .account-note {
+            margin-top: 18px;
+            color: #5f6b75;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .account-hidden {
+            display: none !important;
+        }
+
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .logout-form {
+            margin: 0;
+        }
+
+        .logout-button {
+            padding: 9px 14px;
+            border: 1px solid #cbd5dd;
+            border-radius: 4px;
+            background: #ffffff;
+            color: #263746;
+            cursor: pointer;
+            font: inherit;
+        }
+
+        @media (max-width: 520px) {
+            .account-page {
+                padding: 28px 14px;
+            }
+
+            .account-card {
+                padding: 22px;
+            }
+
+            .nav-label {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- HEADER -->
+    <header class="navbar">
+        <a href="{{ url_for('home') }}" class="logo">
+            Learn<span>ly</span>
+        </a>
+
+        <span class="nav-label">Personalized Learning</span>
+
+        {% if session.get('user_id') %}
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <a href="{{ url_for('module6') }}" style="font-size: 13px; font-weight: 600; color: var(--text); text-decoration: none; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface);">
+                My Progress
+            </a>
+            <form class="logout-form" action="{{ url_for('logout') }}"
+                  method="POST" style="margin: 0;">
+                <button type="submit" class="logout-button">
+                    Log Out
+                </button>
+            </form>
+        </div>
+        {% endif %}
+    </header>
+
+    <main>
+
+        <!-- PAGE 0: LOGIN / SIGN UP -->
+        <section id="account-page"
+                 class="page account-page
+                 {% if not session.get('user_id') %}active{% endif %}">
+
+            <div class="account-container">
+                <div class="account-card">
+
+                    <p class="eyebrow">WELCOME TO LEARNLY</p>
+                    <h1 id="account-heading">Welcome back</h1>
+
+                    <p class="account-description" id="account-description">
+                        Log in to continue your learning journey.
+                    </p>
+
+                    <div class="account-tabs" role="group"
+                         aria-label="Account options">
+
+                        <button type="button" id="login-tab"
+                                class="account-tab"
+                                aria-pressed="true"
+                                onclick="switchAccountMode('login')">
+                            Login
+                        </button>
+
+                        <button type="button" id="signup-tab"
+                                class="account-tab"
+                                aria-pressed="false"
+                                onclick="switchAccountMode('signup')">
+                            Sign Up
+                        </button>
+                    </div>
+
+                    {% if error %}
+                    <p class="account-error" role="alert">
+                        {{ error }}
+                    </p>
+                    {% endif %}
+
+                    <!-- LOGIN FORM -->
+                    <form id="login-form"
+                          action="{{ url_for('login') }}"
+                          method="POST">
+
+                        <div class="account-field">
+                            <label for="login-email">Email address</label>
+                            <input type="email"
+                                   id="login-email"
+                                   name="email"
+                                   autocomplete="email"
+                                   maxlength="254"
+                                   placeholder="you@example.com"
+                                   required>
+                        </div>
+
+                        <div class="account-field">
+                            <label for="login-password">Password</label>
+                            <input type="password"
+                                   id="login-password"
+                                   name="password"
+                                   autocomplete="current-password"
+                                   placeholder="Enter your password"
+                                   required>
+                        </div>
+
+                        <button type="submit"
+                                class="btn-primary account-submit">
+                            Log In
+                        </button>
+                    </form>
+
+                    <!-- SIGN UP FORM -->
+                    <form id="signup-form"
+                          action="{{ url_for('signup') }}"
+                          method="POST"
+                          class="account-hidden">
+
+                        <div class="account-field">
+                            <label for="signup-name">Full name</label>
+                            <input type="text"
+                                   id="signup-name"
+                                   name="name"
+                                   autocomplete="name"
+                                   maxlength="60"
+                                   placeholder="Enter your name"
+                                   required>
+                        </div>
+
+                        <div class="account-field">
+                            <label for="signup-email">Email address</label>
+                            <input type="email"
+                                   id="signup-email"
+                                   name="email"
+                                   autocomplete="email"
+                                   maxlength="254"
+                                   placeholder="you@example.com"
+                                   required>
+                        </div>
+
+                        <div class="account-field">
+                            <label for="signup-password">Password</label>
+                            <input type="password"
+                                   id="signup-password"
+                                   name="password"
+                                   autocomplete="new-password"
+                                   minlength="8"
+                                   placeholder="At least 8 characters"
+                                   required>
+                        </div>
+
+                        <button type="submit"
+                                class="btn-primary account-submit">
+                            Create Account
+                        </button>
+                    </form>
+
+                    <p class="account-note">
+                        Your account is used to access your Learnly learning
+                        dashboard.
+                    </p>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 1: DASHBOARD -->
+        <section id="dashboard-page"
+                 class="page
+                 {% if session.get('user_id') %}active{% endif %}">
+
+            <div class="page-heading">
+                <p class="eyebrow">YOUR LEARNING SPACE</p>
+
+                <h1>
+                    Learning Dashboard
+                    {% if session.get('user_name') %}
+                        , {{ session.get('user_name') }}
+                    {% endif %}
+                </h1>
+
+                <p class="intro">
+                    Choose a subject to begin learning at your own pace.
+                    Learnly will help you understand your current knowledge
+                    before you continue.
+                </p>
+            </div>
+
+            <section class="section my-courses">
+                <div class="section-heading">
+                    <h2>My Courses</h2>
+                    <p class="muted">
+                        Continue with the courses you have started.
+                    </p>
+                </div>
+
+                {% if user_progress and user_progress.summary.active_courses_count > 0 %}
+                <div class="course-grid">
+                    {% for c in user_progress.courses %}
+                    {% if c.is_active %}
+                    <article class="course-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+                        <div>
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                                <h3 style="margin: 0; font-size: 17px;">{{ c.name }}</h3>
+                                <span style="font-size: 13px; font-weight: 700; color: var(--blue);">{{ c.percentage }}%</span>
+                            </div>
+                            <div style="height: 6px; background: #EEF2F6; border-radius: 3px; overflow: hidden; margin-bottom: 12px;">
+                                <div style="width: {{ c.percentage }}%; height: 100%; background: var(--blue); border-radius: 3px;"></div>
+                            </div>
+                            <p style="font-size: 13px; color: var(--muted); margin-bottom: 8px;">
+                                {{ c.completed_topics }} of {{ c.total_topics }} topics completed
+                                {% if c.next_focus %}· Up next: <strong style="color: var(--text);">{{ c.next_focus }}</strong>{% endif %}
+                            </p>
+                        </div>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px;">
+                            <a href="{{ url_for('module5', course=c.name) }}" class="btn-primary" style="font-size: 12px; padding: 6px 12px; text-decoration: none;">
+                                Learning Path &rarr;
+                            </a>
+                            <a href="{{ url_for('module3', course=c.name) }}" class="btn-secondary" style="font-size: 12px; padding: 6px 12px; text-decoration: none;">
+                                Knowledge Graph
+                            </a>
+                            <a href="{{ url_for('module4', course=c.name) }}" class="btn-secondary" style="font-size: 12px; padding: 6px 12px; text-decoration: none;">
+                                Skill Gaps
+                            </a>
+                        </div>
+                    </article>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="1.5">
+                            <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21z"/>
+                            <path d="M4 5.5v15.5"/>
+                            <path d="M8 7h8"/>
+                            <path d="M8 11h6"/>
+                        </svg>
+                    </div>
+
+                    <h3>No courses yet</h3>
+                    <p>
+                        Your courses will appear here after you start learning.
+                    </p>
+                </div>
+                {% endif %}
+            </section>
+
+            <!-- EXPLORE COURSES -->
+            <section class="section explore-section">
+                <div class="section-heading">
+                    <h2>Explore Courses</h2>
+                    <p class="muted">
+                        Select a subject that matches your learning goal.
+                    </p>
+                </div>
+
+                <div class="course-grid">
+
+                    <article class="course-card">
+                        <div class="course-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none"
+                                 stroke="currentColor" stroke-width="1.6">
+                                <rect x="4" y="4" width="16" height="16" rx="2"/>
+                                <path d="M8 9h3"/>
+                                <path d="M8 13h8"/>
+                                <path d="M8 17h5"/>
+                            </svg>
+                        </div>
+
+                        <h3>Python Programming</h3>
+                        <p>
+                            Learn programming fundamentals, data types,
+                            conditions, loops, functions, and object-oriented
+                            programming.
+                        </p>
+
+                        <button type="button" class="btn-primary"
+                                onclick="startCourse('Python Programming')">
+                            Start Course
+                        </button>
+                    </article>
+
+                    <article class="course-card">
+                        <div class="course-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none"
+                                 stroke="currentColor" stroke-width="1.6">
+                                <rect x="3" y="4" width="6" height="6" rx="1"/>
+                                <rect x="15" y="4" width="6" height="6" rx="1"/>
+                                <rect x="9" y="15" width="6" height="6" rx="1"/>
+                                <path d="M9 7h6"/>
+                                <path d="M18 10v2.5L12 15"/>
+                                <path d="M6 10v2.5L12 15"/>
+                            </svg>
+                        </div>
+
+                        <h3>Data Structures &amp; Algorithms</h3>
+                        <p>
+                            Explore arrays, linked lists, stacks, queues,
+                            trees, graphs, and fundamental algorithms.
+                        </p>
+
+                        <button type="button" class="btn-primary"
+                                onclick="startCourse('Data Structures & Algorithms')">
+                            Start Course
+                        </button>
+                    </article>
+
+                    <article class="course-card">
+                        <div class="course-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none"
+                                 stroke="currentColor" stroke-width="1.6">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 2v4"/>
+                                <path d="M12 18v4"/>
+                                <path d="m4.93 4.93 2.83 2.83"/>
+                                <path d="m16.24 16.24 2.83 2.83"/>
+                                <path d="M2 12h4"/>
+                                <path d="M18 12h4"/>
+                                <path d="m4.93 19.07 2.83-2.83"/>
+                                <path d="m16.24 7.76 2.83-2.83"/>
+                            </svg>
+                        </div>
+
+                        <h3>Artificial Intelligence &amp; Machine Learning</h3>
+                        <p>
+                            Learn Python fundamentals, mathematics, statistics,
+                            NumPy, Pandas, and machine learning models.
+                        </p>
+
+                        <button type="button" class="btn-primary"
+                                onclick="startCourse('Artificial Intelligence and Machine Learning (AI/ML)')">
+                            Start Course
+                        </button>
+                    </article>
+
+                    <article class="course-card">
+                        <div class="course-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none"
+                                 stroke="currentColor" stroke-width="1.6">
+                                <path d="M12 3c-2 2-2 3 0 4"/>
+                                <path d="M15 5c-3 3-3 4 0 6"/>
+                                <path d="M6 13h12"/>
+                                <path d="M7 16c3 2 7 2 10 0"/>
+                                <path d="M8 19c2 1 6 1 8 0"/>
+                            </svg>
+                        </div>
+
+                        <h3>Java Programming</h3>
+                        <p>
+                            Understand Java syntax, variables, control
+                            statements, methods, classes, and objects.
+                        </p>
+
+                        <button type="button" class="btn-primary"
+                                onclick="startCourse('Java Programming')">
+                            Start Course
+                        </button>
+                    </article>
+
+                </div>
+            </section>
+        </section>
+
+        <!-- PAGE 2: EXPERIENCE LEVEL -->
+        <section id="experience-page" class="page">
+            <div class="experience-container">
+
+                <button type="button" class="text-button"
+                        onclick="backToDashboard()">
+                    &larr; Back to Dashboard
+                </button>
+
+                <div class="experience-heading">
+                    <p class="eyebrow">COURSE SETUP</p>
+                    <h1>Set up your learning experience</h1>
+
+                    <p class="course-name" id="selected-course-name">
+                        Python Programming
+                    </p>
+                </div>
+
+                <div class="level-section">
+                    <h2>What is your current experience level?</h2>
+
+                    <p class="muted">
+                        Choose the option that best describes your current
+                        understanding of this subject.
+                    </p>
+
+                    <div class="level-options">
+                        <button type="button" class="level-card"
+                                data-level="Beginner" aria-pressed="false"
+                                onclick="selectLevel('Beginner')">
+                            <span class="level-title">Beginner</span>
+                            <span class="level-description">
+                                I am new to this subject or need to strengthen
+                                the basics.
+                            </span>
+                        </button>
+
+                        <button type="button" class="level-card"
+                                data-level="Intermediate" aria-pressed="false"
+                                onclick="selectLevel('Intermediate')">
+                            <span class="level-title">Intermediate</span>
+                            <span class="level-description">
+                                I understand the basics and can solve some
+                                problems independently.
+                            </span>
+                        </button>
+
+                        <button type="button" class="level-card"
+                                data-level="Advanced" aria-pressed="false"
+                                onclick="selectLevel('Advanced')">
+                            <span class="level-title">Advanced</span>
+                            <span class="level-description">
+                                I know the core concepts and can solve more
+                                complex problems.
+                            </span>
+                        </button>
+                    </div>
+
+                    <p id="level-validation" class="validation-message"
+                       role="alert" hidden>
+                        Please select your experience level to continue.
+                    </p>
+
+                    <div class="experience-actions">
+                        <button type="button" class="btn-primary"
+                                onclick="continueToInstructions()">
+                            Continue
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 3: ASSESSMENT INSTRUCTIONS -->
+        <section id="instructions-page" class="page">
+            <div class="assessment-instructions-container">
+
+                <button type="button" class="text-button"
+                        onclick="backToExperience()">
+                    &larr; Back to Course Setup
+                </button>
+
+                <div class="instructions-heading">
+                    <p class="eyebrow">KNOWLEDGE ASSESSMENT</p>
+                    <h1>Knowledge Assessment</h1>
+
+                    <p class="intro">
+                        Assess your current understanding of
+                        <strong id="instructions-course-name">
+                            Python Programming
+                        </strong>.
+                        Your responses will help identify areas you may need
+                        to strengthen.
+                    </p>
+                </div>
+
+                <div class="question-count-card">
+                    <div class="question-count-number">20</div>
+                    <div>
+                        <h2>Questions</h2>
+                        <p class="muted">Multiple-choice assessment</p>
+                    </div>
+                </div>
+
+                <div class="instructions-list">
+                    <h2>Instructions</h2>
+                    <ul>
+                        <li>Select one answer for each question.</li>
+                        <li>Use Next and Previous to move between questions.</li>
+                        <li>You can skip a question and return to it later.</li>
+                        <li>Use the numbered question panel to navigate directly to a question.</li>
+                        <li>Review unanswered questions before submitting your assessment.</li>
+                    </ul>
+                </div>
+
+                <div class="instructions-actions">
+                    <button type="button" class="btn-primary"
+                            id="btn-begin-assessment"
+                            onclick="beginAssessment()">
+                        Begin Assessment
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 4: ASSESSMENT QUESTIONS -->
+        <section id="questions-page" class="page">
+
+            <div class="assessment-page-heading">
+                <div>
+                    <p class="eyebrow">KNOWLEDGE ASSESSMENT</p>
+                    <h1 id="assessment-course-name">Python Programming</h1>
+                </div>
+
+                <p id="question-counter" class="question-counter">
+                    Question 1 of 20
+                </p>
+            </div>
+
+            <div class="assessment-progress">
+                <div class="assessment-progress-track"
+                     role="progressbar"
+                     aria-label="Assessment completion"
+                     aria-valuemin="0"
+                     aria-valuemax="20"
+                     aria-valuenow="0"
+                     id="assessment-progress-track">
+                    <div id="assessment-progress-fill"></div>
+                </div>
+
+                <p id="assessment-progress-text">0 of 20 answered</p>
+            </div>
+
+            <div class="assessment-layout">
+
+                <aside id="question-sidebar" class="question-sidebar"
+                       aria-label="Question navigation">
+
+                    <div class="question-sidebar-heading">
+                        <h2>Questions</h2>
+
+                        <button type="button" class="panel-toggle"
+                                aria-label="Close question panel"
+                                title="Close question panel"
+                                onclick="toggleQuestionSidebar(false)">
+                            <svg viewBox="0 0 24 24" fill="none"
+                                 stroke="currentColor" stroke-width="1.8">
+                                <path d="m15 18-6-6 6-6"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div id="question-number-grid"
+                         class="question-number-grid">
+                    </div>
+
+                    <div class="question-status-legend">
+                        <p><span class="status-dot status-current"></span> Current</p>
+                        <p><span class="status-dot status-answered"></span> Answered</p>
+                        <p><span class="status-dot status-unanswered"></span> Unanswered</p>
+                    </div>
+                </aside>
+
+                <button type="button" id="open-question-sidebar"
+                        class="panel-reopen-button"
+                        aria-label="Open question panel"
+                        title="Open question panel"
+                        onclick="toggleQuestionSidebar(true)" hidden>
+                    <svg viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="1.8">
+                        <path d="m9 18 6-6-6-6"/>
+                    </svg>
+                </button>
+
+                <div class="question-content">
+                    <div class="question-content-heading">
+                        <p class="eyebrow" id="question-label">QUESTION 1</p>
+                        <h2 id="question-text">QUESTION</h2>
+                    </div>
+
+                    <div class="answer-options" role="group"
+                         aria-label="Answer choices">
+
+                        <button type="button" class="answer-option"
+                                data-answer="A" aria-pressed="false"
+                                onclick="selectAnswer('A')">
+                            <span class="answer-letter">A</span>
+                            <span class="answer-text" id="answer-text-A">Option A</span>
+                        </button>
+
+                        <button type="button" class="answer-option"
+                                data-answer="B" aria-pressed="false"
+                                onclick="selectAnswer('B')">
+                            <span class="answer-letter">B</span>
+                            <span class="answer-text" id="answer-text-B">Option B</span>
+                        </button>
+
+                        <button type="button" class="answer-option"
+                                data-answer="C" aria-pressed="false"
+                                onclick="selectAnswer('C')">
+                            <span class="answer-letter">C</span>
+                            <span class="answer-text" id="answer-text-C">Option C</span>
+                        </button>
+
+                        <button type="button" class="answer-option"
+                                data-answer="D" aria-pressed="false"
+                                onclick="selectAnswer('D')">
+                            <span class="answer-letter">D</span>
+                            <span class="answer-text" id="answer-text-D">Option D</span>
+                        </button>
+                    </div>
+
+                    <div class="question-navigation">
+                        <button type="button" id="btn-previous-question"
+                                class="btn-secondary"
+                                onclick="goToPreviousQuestion()" disabled>
+                            Previous
+                        </button>
+
+                        <button type="button" id="btn-next-question"
+                                class="btn-primary"
+                                onclick="goToNextQuestion()">
+                            Next
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="assessment-submit-row">
+                <button type="button" id="btn-submit-assessment"
+                        class="btn-secondary"
+                        onclick="submitAssessment()">
+                    Submit Assessment
+                </button>
+            </div>
+        </section>
+
+        <!-- PAGE 5: ASSESSMENT RESULTS & KNOWLEDGE MAP SUMMARY -->
+        <section id="results-page" class="page">
+            <div class="assessment-instructions-container">
+                <div class="instructions-heading">
+                    <p class="eyebrow">ASSESSMENT COMPLETED</p>
+                    <h1>Your Knowledge Assessment Results</h1>
+
+                </div>
+
+                <!-- OVERALL SCORE CARD -->
+                <div class="question-count-card">
+                    <div class="question-count-number" id="result-score-percent">0%</div>
+                    <div>
+                        <h2 id="result-score-headline">Overall Score: 0 of 20</h2>
+                        <p class="muted" id="result-score-summary">Knowledge levels categorized by topic</p>
+                    </div>
+                </div>
+
+                <!-- SKILL GAP & PREREQUISITE ALERT -->
+                <div id="results-skill-gap-alert" style="margin-top: 20px; display: none;"></div>
+
+                <!-- TOPIC SCORE BREAKDOWN TABLE -->
+                <div class="instructions-list" style="margin-top: 24px;">
+                    <h2>Topic Performance Breakdown</h2>
+                    <div id="results-topic-breakdown" style="display: grid; gap: 12px; margin-top: 16px;">
+                        <!-- Injected via JavaScript -->
+                    </div>
+                </div>
+
+                <!-- ACTION BUTTONS -->
+                <div class="instructions-actions" style="margin-top: 32px; display: flex; gap: 14px; flex-wrap: wrap;">
+                    <button type="button" class="btn-primary" id="btn-view-skill-gaps" onclick="openModule4Gaps()">
+                        View Skill Gaps &rarr;
+                    </button>
+                    <button type="button" class="btn-secondary" id="btn-view-learning-path" onclick="openModule3Path()">
+                        View Knowledge Graph
+                    </button>
+                    <button type="button" class="btn-secondary" onclick="backToDashboard()">
+                        Return to Dashboard
+                    </button>
+                </div>
+            </div>
+        </section>
+
+
+    </main>
+
+    <footer>
+        <p>Learnly | Personalized Learning</p>
+    </footer>
+
+    <script>
+        // Account form switching
+        function switchAccountMode(mode) {
+            const loginForm = document.getElementById("login-form");
+            const signupForm = document.getElementById("signup-form");
+            const loginTab = document.getElementById("login-tab");
+            const signupTab = document.getElementById("signup-tab");
+
+            const isLogin = mode === "login";
+
+            loginForm.classList.toggle("account-hidden", !isLogin);
+            signupForm.classList.toggle("account-hidden", isLogin);
+
+            loginTab.classList.toggle("active", isLogin);
+            signupTab.classList.toggle("active", !isLogin);
+
+            loginTab.setAttribute("aria-pressed", String(isLogin));
+            signupTab.setAttribute("aria-pressed", String(!isLogin));
+
+            document.getElementById("account-heading").textContent =
+                isLogin ? "Welcome back" : "Create your account";
+
+            document.getElementById("account-description").textContent =
+                isLogin
+                    ? "Log in to continue your learning journey."
+                    : "Create an account to get started with Learnly.";
+        }
+
+        // Restore the selected form after server-side validation errors.
+        const initialAuthMode = {{ auth_mode | default('login') | tojson }};
+        switchAccountMode(initialAuthMode);
+
+        // Application state
+        let selectedCourse = "";
+        let selectedLevel = "";
+        let totalQuestions = 20;
+        let currentQuestion = 1;
+        let answers = Array(totalQuestions).fill("");
+        let currentAssessmentQuestions = [];
+        let latestAssessmentResult = null;
+
+        // Display a page
+        function showPage(pageId) {
+            document.querySelectorAll(".page").forEach(function (page) {
+                page.classList.remove("active");
+            });
+
+            const selectedPage = document.getElementById(pageId);
+
+            if (selectedPage) {
+                selectedPage.classList.add("active");
+            }
+
+            window.scrollTo({ top: 0, behavior: "auto" });
+        }
+
+        // Start a course
+        function startCourse(courseName) {
+            selectedCourse = courseName;
+            selectedLevel = "";
+
+            // Save selected course in localStorage
+            localStorage.setItem("learnly_selected_course", selectedCourse);
+
+            document.getElementById("selected-course-name").textContent =
+                selectedCourse;
+
+            document.querySelectorAll(".level-card").forEach(function (card) {
+                card.classList.remove("selected");
+                card.setAttribute("aria-pressed", "false");
+            });
+
+            document.getElementById("level-validation").hidden = true;
+            showPage("experience-page");
+        }
+
+        // Select experience level
+        function selectLevel(level) {
+            selectedLevel = level;
+
+            document.querySelectorAll(".level-card").forEach(function (card) {
+                const isSelected = card.dataset.level === level;
+
+                card.classList.toggle("selected", isSelected);
+                card.setAttribute("aria-pressed", String(isSelected));
+            });
+
+            document.getElementById("level-validation").hidden = true;
+        }
+
+        function backToDashboard() {
+            showPage("dashboard-page");
+        }
+
+        // Continue to assessment instructions
+        function continueToInstructions() {
+            if (!selectedLevel) {
+                document.getElementById("level-validation").hidden = false;
+                return;
+            }
+
+            document.getElementById("instructions-course-name").textContent =
+                selectedCourse;
+
+            showPage("instructions-page");
+        }
+
+        function backToExperience() {
+            showPage("experience-page");
+        }
+
+        // Begin assessment: fetch real questions from database
+        async function beginAssessment() {
+            currentQuestion = 1;
+
+            document.getElementById("assessment-course-name").textContent =
+                selectedCourse;
+
+            try {
+                // Fetch real questions for selected course (e.g. Python Programming, Data Structures)
+                const res = await fetch(`/api/assessment-questions?course=${encodeURIComponent(selectedCourse)}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.questions && data.questions.length > 0) {
+                        currentAssessmentQuestions = data.questions;
+                        totalQuestions = data.questions.length;
+                        if (data.course_name) {
+                            selectedCourse = data.course_name;
+                        }
+                    }
+                }
+            } catch (err) {
+                console.warn("Could not fetch questions from server, using existing state", err);
+            }
+
+            if (!currentAssessmentQuestions || currentAssessmentQuestions.length === 0) {
+                alert("Assessment questions for this course could not be loaded. Please try again or select another course.");
+                showPage("dashboard-page");
+                return;
+            }
+
+            answers = Array(totalQuestions).fill("");
+            createQuestionNumbers();
+            toggleQuestionSidebar(true);
+            displayQuestion();
+            showPage("questions-page");
+        }
+
+        // Create question navigation buttons
+        function createQuestionNumbers() {
+            const grid = document.getElementById("question-number-grid");
+            grid.replaceChildren();
+
+            for (let number = 1; number <= totalQuestions; number++) {
+                const button = document.createElement("button");
+
+                button.type = "button";
+                button.className = "question-number unanswered";
+                button.textContent = number;
+                button.setAttribute("aria-label", "Go to question " + number);
+
+                button.addEventListener("click", function () {
+                    currentQuestion = number;
+                    displayQuestion();
+                });
+
+                grid.appendChild(button);
+            }
+        }
+
+        // Display current question with real database text and options
+        function displayQuestion() {
+            document.getElementById("question-counter").textContent =
+                "Question " + currentQuestion + " of " + totalQuestions;
+
+            document.getElementById("question-label").textContent =
+                "QUESTION " + currentQuestion;
+
+            const currentQ = currentAssessmentQuestions[currentQuestion - 1];
+
+            if (currentQ) {
+                document.getElementById("question-text").textContent = currentQ.text;
+                if (currentQ.topic_name) {
+                    document.getElementById("question-label").textContent =
+                        `QUESTION ${currentQuestion} · ${currentQ.topic_name.toUpperCase()}`;
+                }
+
+                // Populate real option texts
+                document.getElementById("answer-text-A").textContent = currentQ.options.A;
+                document.getElementById("answer-text-B").textContent = currentQ.options.B;
+                document.getElementById("answer-text-C").textContent = currentQ.options.C;
+                document.getElementById("answer-text-D").textContent = currentQ.options.D;
+            } else {
+                document.getElementById("question-text").textContent = "Question loading...";
+            }
+
+            document.querySelectorAll(".answer-option").forEach(function (button) {
+                const isSelected =
+                    button.dataset.answer === answers[currentQuestion - 1];
+
+                button.classList.toggle("selected", isSelected);
+                button.setAttribute("aria-pressed", String(isSelected));
+            });
+
+            document.getElementById("btn-previous-question").disabled =
+                currentQuestion === 1;
+
+            document.getElementById("btn-next-question").disabled =
+                currentQuestion === totalQuestions;
+
+            updateQuestionStatus();
+        }
+
+        function selectAnswer(answer) {
+            answers[currentQuestion - 1] = answer;
+            displayQuestion();
+        }
+
+        function goToPreviousQuestion() {
+            if (currentQuestion > 1) {
+                currentQuestion--;
+                displayQuestion();
+            }
+        }
+
+        function goToNextQuestion() {
+            if (currentQuestion < totalQuestions) {
+                currentQuestion++;
+                displayQuestion();
+            }
+        }
+
+        // Update question status and progress
+        function updateQuestionStatus() {
+            const answeredCount = answers.filter(function (answer) {
+                return answer !== "";
+            }).length;
+
+            const percentage = (answeredCount / totalQuestions) * 100;
+
+            document.getElementById("assessment-progress-fill").style.width =
+                percentage + "%";
+
+            document.getElementById("assessment-progress-text").textContent =
+                answeredCount + " of " + totalQuestions + " answered";
+
+            document.getElementById("assessment-progress-track").setAttribute(
+                "aria-valuenow", answeredCount
+            );
+
+            document.querySelectorAll(".question-number").forEach(function (button, index) {
+                const questionNumber = index + 1;
+                const isCurrent = questionNumber === currentQuestion;
+                const isAnswered = answers[index] !== "";
+
+                button.classList.toggle("current", isCurrent);
+                button.classList.toggle("answered", isAnswered && !isCurrent);
+                button.classList.toggle("unanswered", !isAnswered && !isCurrent);
+
+                button.setAttribute(
+                    "aria-current", isCurrent ? "step" : "false"
+                );
+            });
+        }
+
+        function toggleQuestionSidebar(open) {
+            document.getElementById("question-sidebar").hidden = !open;
+            document.getElementById("open-question-sidebar").hidden = open;
+        }
+
+        // Submit assessment: process using Knowledge Map Generation Algorithm
+        async function submitAssessment() {
+            const answeredCount = answers.filter(function (answer) {
+                return answer !== "";
+            }).length;
+
+            const unansweredCount = totalQuestions - answeredCount;
+
+            let message =
+                "You have answered " + answeredCount +
+                " out of " + totalQuestions + " questions.";
+
+            if (unansweredCount > 0) {
+                message += "\n\n" + unansweredCount +
+                    " question(s) are unanswered.";
+                message += "\n\nDo you want to submit anyway?";
+            } else {
+                message += "\n\nAre you sure you want to submit?";
+            }
+
+            if (!window.confirm(message)) {
+                return;
+            }
+
+            // Convert answers array to map { "1": "B", "2": "C", ... }
+            const answersMap = {};
+            answers.forEach((ans, idx) => {
+                if (ans) {
+                    answersMap[idx + 1] = ans;
+                }
+            });
+
+            try {
+                const submitBtn = document.getElementById("btn-submit-assessment");
+                submitBtn.disabled = true;
+                submitBtn.textContent = "Calculating Knowledge Map...";
+
+                const res = await fetch("/api/assessment-submit", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        course_name: selectedCourse,
+                        answers: answersMap
+                    })
+                });
+
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Submit Assessment";
+
+                if (!res.ok) {
+                    alert("Error submitting assessment. Please try again.");
+                    return;
+                }
+
+                const data = await res.json();
+                latestAssessmentResult = data;
+
+                // Render Results page
+                displayAssessmentResults(data);
+                showPage("results-page");
+
+            } catch (err) {
+                console.error("Submission failed:", err);
+                alert("Failed to submit assessment to server. Please check your connection.");
+            }
+        }
+
+        // Render calculated topic scores, knowledge classifications, and detected skill gaps
+        function displayAssessmentResults(data) {
+            document.getElementById("result-score-percent").textContent =
+                data.overall_percentage + "%";
+
+            document.getElementById("result-score-headline").textContent =
+                `Overall Score: ${data.total_correct} of ${data.total_questions} Correct`;
+
+            // Display Detected Skill-Gaps Banner
+            const gapAlertEl = document.getElementById("results-skill-gap-alert");
+            if (gapAlertEl) {
+                const gapsSummary = (data.skill_gaps && data.skill_gaps.summary) || {};
+                const missingSkills = gapsSummary.missing_skills || [];
+                const practiceCount = gapsSummary.needs_practice_count || 0;
+                const lockedCount = gapsSummary.locked_count || 0;
+
+                if (missingSkills.length > 0 || practiceCount > 0 || lockedCount > 0) {
+                    gapAlertEl.style.display = "block";
+                    let missingHtml = "";
+                    if (missingSkills.length > 0) {
+                        missingHtml = `<p style="margin: 6px 0 0; font-size: 13px; color: #991b1b;">
+                            <strong>Missing Prerequisite Skills:</strong> ${missingSkills.join(", ")}
+                        </p>`;
+                    }
+
+                    gapAlertEl.innerHTML = `
+                        <div style="background: #FEF2F2; border: 1px solid #FCA5A5; border-radius: 8px; padding: 16px 20px;">
+                            <div style="display: flex; align-items: center; gap: 8px; font-weight: 700; color: #991B1B; font-size: 14px;">
+                                <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                                Skill Gaps Detected
+                            </div>
+                            <p style="margin: 6px 0 0; font-size: 13px; color: #7F1D1D; line-height: 1.5;">
+                                Learnly detected <strong>${lockedCount} locked topic(s)</strong> and <strong>${practiceCount} topic(s) needing practice</strong>.
+                            </p>
+                            ${missingHtml}
+                        </div>
+                    `;
+                } else {
+                    gapAlertEl.style.display = "block";
+                    gapAlertEl.innerHTML = `
+                        <div style="background: #ECFDF5; border: 1px solid #A7F3D0; border-radius: 8px; padding: 14px 18px; color: #065F46; font-size: 13px;">
+                            <strong>Outstanding Performance!</strong> No major skill gaps detected. You have demonstrated mastery across all assessed topics!
+                        </div>
+                    `;
+                }
+            }
+
+            const breakdownContainer = document.getElementById("results-topic-breakdown");
+            breakdownContainer.replaceChildren();
+
+            const topicScores = data.topic_scores;
+            for (const tId in topicScores) {
+                const item = topicScores[tId];
+
+                // Badge color based on algorithm classification
+                let badgeColor = "#16a34a"; // Strong
+                let badgeBg = "#ECFDF5";
+                if (item.knowledge_level === "Moderate") {
+                    badgeColor = "#b45309";
+                    badgeBg = "#FEFCE8";
+                } else if (item.knowledge_level === "Weak") {
+                    badgeColor = "#dc2626";
+                    badgeBg = "#FEF2F2";
+                }
+
+                const card = document.createElement("div");
+                card.style.cssText = "display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px;";
+
+                card.innerHTML = `
+                    <div>
+                        <div style="font-weight: 700; color: var(--text); font-size: 15px; margin-bottom: 2px;">
+                            ${item.topic_name}
+                        </div>
+                        <div style="font-size: 13px; color: var(--muted);">
+                            Score: ${item.correct_answers} / ${item.total_questions} (${item.score_percentage}%)
+                        </div>
+                    </div>
+                    <div>
+                        <span style="font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 4px; background: ${badgeBg}; color: ${badgeColor};">
+                            ${item.knowledge_level}
+                        </span>
+                    </div>
+                `;
+                breakdownContainer.appendChild(card);
+            }
+        }
+
+        function openModule4Gaps() {
+            const course = (latestAssessmentResult && latestAssessmentResult.course_name) || selectedCourse || "Python Programming";
+            window.location.href = `/module4?course=${encodeURIComponent(course)}`;
+        }
+
+        function openModule3Path() {
+            const course = (latestAssessmentResult && latestAssessmentResult.course_name) || selectedCourse || "Python Programming";
+            window.location.href = `/module3?course=${encodeURIComponent(course)}`;
+        }
+    </script>
+
+
+</body>
+</html>

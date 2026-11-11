@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learnly | My Progress</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        .page-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0 0 18px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text);
+            margin: 24px 0 10px;
+        }
+
+        .table-box {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+
+        table.simple-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        table.simple-table th,
+        table.simple-table td {
+            padding: 11px 14px;
+            text-align: left;
+            border-bottom: 1px solid #EEF2F6;
+            vertical-align: middle;
+        }
+
+        table.simple-table th {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--muted);
+            background: var(--surface);
+        }
+
+        table.simple-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .progress-cell {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 140px;
+        }
+
+        .progress-cell .learnly-progress {
+            flex: 1;
+            min-width: 72px;
+        }
+
+        .progress-cell span {
+            font-weight: 600;
+            color: var(--text);
+            min-width: 34px;
+        }
+
+        .inline-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .table-link {
+            color: #0f766e;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .table-link:hover {
+            text-decoration: underline;
+        }
+
+        .bottom-nav-row {
+            margin-top: 26px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="navbar">
+        <a href="{{ url_for('home') }}" class="logo">Learn<span>ly</span></a>
+
+        <div class="nav-links-cluster">
+            <a href="{{ url_for('module3') }}" class="nav-tab-link">Knowledge Graph</a>
+            <a href="{{ url_for('module4') }}" class="nav-tab-link">Skill Gaps</a>
+            <a href="{{ url_for('module5') }}" class="nav-tab-link">Learning Path</a>
+            <a href="{{ url_for('module6') }}" class="nav-tab-link active">My Progress</a>
+            <a href="{{ url_for('home') }}" class="nav-tab-link">&larr; Dashboard</a>
+        </div>
+    </header>
+
+    <main>
+        <h1 class="page-title">My Progress</h1>
+
+        {% if progress_data %}
+        {% set summary = progress_data.summary %}
+
+        <section class="simple-summary-bar" aria-label="Progress summary">
+            <div class="simple-summary-cell">
+                <strong>{{ summary.overall_percentage }}%</strong>
+                <span>Overall ({{ summary.total_completed_all }}/{{ summary.total_topics_all }} topics)</span>
+            </div>
+            <div class="simple-summary-cell">
+                <strong>{{ summary.verified_mastery_all }}</strong>
+                <span>Verified Mastery</span>
+            </div>
+            <div class="simple-summary-cell">
+                <strong>{{ summary.proficient_all }}</strong>
+                <span>Proficient</span>
+            </div>
+            <div class="simple-summary-cell">
+                <strong>{{ summary.developing_all + summary.needs_attention_all }}</strong>
+                <span>Needs Practice</span>
+            </div>
+        </section>
+
+        <h2 class="section-title">Courses</h2>
+        <div class="table-box">
+            <table class="simple-table">
+                <thead>
+                    <tr>
+                        <th scope="col">Course</th>
+                        <th scope="col">Completed</th>
+                        <th scope="col">Progress</th>
+                        <th scope="col">Next Topic</th>
+                        <th scope="col">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in progress_data.courses %}
+                    <tr>
+                        <td><strong>{{ c.name }}</strong></td>
+                        <td>{{ c.completed_topics }} / {{ c.total_topics }}</td>
+                        <td>
+                            <div class="progress-cell">
+                                <progress class="learnly-progress" max="100" value="{{ c.percentage }}" aria-label="{{ c.name }} progress"></progress>
+                                <span>{{ c.percentage }}%</span>
+                            </div>
+                        </td>
+                        <td>
+                            {% if c.is_active and c.next_focus %}
+                                {{ c.next_focus }}
+                            {% elif c.is_active %}
+                                Done
+                            {% else %}
+                                <span style="color: var(--muted);">Not started</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="inline-actions">
+                                {% if c.is_active and c.next_focus_id %}
+                                <a href="{{ url_for('topic_practice', topic_id=c.next_focus_id, course=c.name) }}" class="table-link">Study</a>
+                                {% endif %}
+                                <a href="{{ url_for('module5', course=c.name) }}" class="table-link">{% if c.is_active %}Path{% else %}View{% endif %}</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if progress_data.recent_activity %}
+        <h2 class="section-title">Recent Activity</h2>
+        <div class="table-box">
+            <table class="simple-table">
+                <thead>
+                    <tr>
+                        <th scope="col">Course</th>
+                        <th scope="col">Activity</th>
+                        <th scope="col">Score</th>
+                        <th scope="col">Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for act in progress_data.recent_activity %}
+                    <tr>
+                        <td><strong>{{ act.course_name }}</strong></td>
+                        <td>
+                            {% if act.assessment_kind == 'topic_mastery' %}
+                            Mastery Assessment{% if act.topic_name %}: {{ act.topic_name }}{% endif %}
+                            {% elif act.assessment_kind == 'topic_practice' %}
+                            Topic Practice{% if act.topic_name %}: {{ act.topic_name }}{% endif %}
+                            {% else %}
+                            Initial Assessment
+                            {% endif %}
+                        </td>
+                        <td>{{ act.total_score }}/{{ act.total_questions }} ({{ act.score_percentage }}%)</td>
+                        <td style="color: var(--muted);">{{ act.submitted_at }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        {% endif %}
+
+        <div class="bottom-nav-row">
+            <a href="{{ url_for('home') }}" class="btn-secondary">&larr; Back to Dashboard</a>
+        </div>
+    </main>
+
+    <footer>
+        <p>Learnly</p>
+    </footer>
+
+</body>
+</html>

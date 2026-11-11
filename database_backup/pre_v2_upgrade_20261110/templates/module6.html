@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learnly | My Progress</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        :root {
+            --status-completed: #15803d;
+            --status-inprogress: #b45309;
+            --status-available: #0369a1;
+            --status-locked: #64748b;
+        }
+
+        .page-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        /* Top Overview Analytics Grid */
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .analytics-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 16px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .analytics-number {
+            font-size: 26px;
+            font-weight: 700;
+            line-height: 1;
+            color: var(--text);
+        }
+
+        .analytics-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .analytics-desc {
+            font-size: 12px;
+            color: var(--muted);
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        /* Course Progress Cards Grid */
+        .courses-progress-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 18px;
+            margin-bottom: 28px;
+        }
+
+        .course-progress-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 20px 22px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 16px;
+            transition: border-color 0.15s ease;
+        }
+
+        .course-progress-card:hover {
+            border-color: var(--blue);
+        }
+
+        .course-card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .course-card-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--text);
+            margin: 0 0 4px;
+        }
+
+        .progress-pct-badge {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--blue);
+            background: var(--surface);
+            padding: 3px 8px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .course-card-desc {
+            font-size: 13px;
+            color: var(--muted);
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        .bar-track {
+            height: 6px;
+            background: #EEF2F6;
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: var(--blue);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .course-meta-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            font-size: 12px;
+            color: var(--muted);
+            padding-top: 8px;
+            border-top: 1px solid #EEF2F6;
+        }
+
+        .course-meta-tag strong {
+            color: var(--text);
+        }
+
+        .course-actions-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 4px;
+        }
+
+        /* Adaptation Notice Box */
+        .adaptation-banner {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 16px 20px;
+            margin-bottom: 24px;
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+        }
+
+        .adaptation-banner svg {
+            color: var(--blue);
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .adaptation-content h3 {
+            margin: 0 0 4px;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .adaptation-content p {
+            margin: 0;
+            font-size: 13px;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        /* Floating Sync Toast */
+        .sync-toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 10px 16px;
+            background: #172033;
+            color: #FFFFFF;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-size: 13px;
+            z-index: 999;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.2s ease;
+            pointer-events: none;
+        }
+
+        .sync-toast.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @media (max-width: 900px) {
+            .analytics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .courses-progress-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .analytics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <header class="navbar">
+        <a href="{{ url_for('home') }}" class="logo">
+            Learn<span>ly</span>
+        </a>
+
+        <div class="nav-links-cluster">
+            <a href="{{ url_for('module3') }}" class="nav-tab-link" title="Knowledge Graph">
+                Knowledge Graph
+            </a>
+            <a href="{{ url_for('module4') }}" class="nav-tab-link" title="Skill Gaps">
+                Skill Gaps
+            </a>
+            <a href="{{ url_for('module5') }}" class="nav-tab-link" title="Learning Path">
+                Learning Path
+            </a>
+            <a href="{{ url_for('module6') }}" class="nav-tab-link active" title="My Progress">
+                My Progress
+            </a>
+            <a href="{{ url_for('home') }}" class="nav-tab-link" title="Return to Dashboard">
+                &larr; Dashboard
+            </a>
+        </div>
+    </header>
+
+    <main>
+
+        <!-- PAGE HEADER -->
+        <div class="page-header-row">
+            <div>
+                <p class="eyebrow">Curriculum Tracking</p>
+                <h1 style="font-size: clamp(26px, 4vw, 34px); font-weight: 800; letter-spacing: -0.7px; margin-bottom: 6px;">
+                    Progress Tracking &amp; Learning Adaptation
+                </h1>
+                <p style="color: var(--muted); margin: 0; font-size: 14px;">
+                    Tracking across enrolled courses, automated prerequisite progression, and adaptive paths.
+                </p>
+            </div>
+        </div>
+
+        {% if progress_data %}
+        {% set summary = progress_data.summary %}
+
+        <!-- OVERALL ANALYTICS METRICS -->
+        <section class="analytics-grid" aria-label="Student progress overview statistics">
+            <div class="analytics-card">
+                <span class="analytics-number" style="color: var(--status-completed);">{{ summary.total_completed_all }}</span>
+                <span class="analytics-label">Mastered Topics</span>
+                <p class="analytics-desc">Topics completed across all enrolled courses.</p>
+            </div>
+
+            <div class="analytics-card">
+                <span class="analytics-number" style="color: var(--status-inprogress);">{{ summary.total_in_progress_all }}</span>
+                <span class="analytics-label">Topics in Progress</span>
+                <p class="analytics-desc">Active topics currently being studied.</p>
+            </div>
+
+            <div class="analytics-card">
+                <span class="analytics-number" style="color: var(--status-available);">{{ summary.active_courses_count }} / {{ summary.total_courses_count }}</span>
+                <span class="analytics-label">Active Courses</span>
+                <p class="analytics-desc">Courses with recorded assessment or progress.</p>
+            </div>
+
+            <div class="analytics-card">
+                <span class="analytics-number" style="color: var(--blue);">{{ summary.overall_percentage }}%</span>
+                <span class="analytics-label">Curriculum Mastery</span>
+                <p class="analytics-desc">Overall completion rate across curriculum topics.</p>
+            </div>
+        </section>
+
+        <!-- ADAPTIVE UNLOCKING BANNER -->
+        <section class="adaptation-banner" aria-label="Dynamic adaptation mechanics">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+            </svg>
+            <div class="adaptation-content">
+                <h3>Automated Prerequisite Adaptation</h3>
+                <p>
+                    When you complete a topic in any course, Learnly's prerequisite logic automatically re-evaluates the curriculum graph. Downstream topics whose prerequisites are met are unlocked, and your personalized path updates to recommend the next concept.
+                </p>
+            </div>
+        </section>
+
+        <!-- COURSE-BY-COURSE PROGRESS CARDS -->
+        <section aria-label="Course by course progress">
+            <h2 style="font-size: 17px; font-weight: 700; color: var(--text); margin: 0 0 14px;">
+                Course Progression &amp; Adaptive Next Steps
+            </h2>
+
+            <div class="courses-progress-grid">
+                {% for c in progress_data.courses %}
+                <article class="course-progress-card">
+                    <div>
+                        <div class="course-card-top">
+                            <div>
+                                <h3 class="course-card-title">{{ c.name }}</h3>
+                                <p class="course-card-desc">{{ c.description }}</p>
+                            </div>
+                            <span class="progress-pct-badge">{{ c.percentage }}%</span>
+                        </div>
+
+                        <div class="bar-track">
+                            <div class="bar-fill" style="width: {{ c.percentage }}%;"></div>
+                        </div>
+
+                        <div class="course-meta-tags">
+                            <span class="course-meta-tag">
+                                Progress: <strong>{{ c.completed_topics }} / {{ c.total_topics }} topics</strong>
+                            </span>
+
+                            {% if c.latest_assessment %}
+                            <span class="course-meta-tag">
+                                Assessment: <strong>{{ c.latest_assessment.score_percentage }}%</strong>
+                            </span>
+                            {% else %}
+                            <span class="course-meta-tag" style="color: var(--muted);">
+                                Assessment: <em>Not taken</em>
+                            </span>
+                            {% endif %}
+
+                            {% if c.next_focus %}
+                            <span class="course-meta-tag" style="color: var(--blue);">
+                                Up Next: <strong>{{ c.next_focus }}</strong>
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="course-actions-group">
+                        <a href="{{ url_for('module5', course=c.name) }}" class="btn-primary" style="text-decoration: none; font-size: 12px; padding: 7px 12px;">
+                            Learning Path &rarr;
+                        </a>
+                        <a href="{{ url_for('module3', course=c.name) }}" class="btn-secondary" style="text-decoration: none; font-size: 12px; padding: 7px 12px;">
+                            Knowledge Graph
+                        </a>
+                        <a href="{{ url_for('module4', course=c.name) }}" class="btn-secondary" style="text-decoration: none; font-size: 12px; padding: 7px 12px;">
+                            Skill Gaps
+                        </a>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+        </section>
+
+        {% endif %}
+
+        <!-- RETURN TO DASHBOARD -->
+        <div style="margin-top: 32px; padding-top: 18px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+            <a href="{{ url_for('home') }}" class="btn-secondary" style="text-decoration: none;">
+                &larr; Return to Dashboard
+            </a>
+            <span style="font-size: 13px; color: var(--muted);">
+                Learnly · Personalized Learning Platform
+            </span>
+        </div>
+
+    </main>
+
+    <!-- FLOATING SYNC TOAST -->
+    <div id="sync-toast" class="sync-toast">
+        <span id="sync-toast-message">Progress saved</span>
+    </div>
+
+    <footer>
+        <p>Learnly | Personalized Learning</p>
+    </footer>
+
+</body>
+</html>

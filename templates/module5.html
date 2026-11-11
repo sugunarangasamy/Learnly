@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learnly | Learning Path</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        .page-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .controls-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .control-select {
+            padding: 7px 12px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            background: var(--white);
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            cursor: pointer;
+        }
+
+        .hero-focus-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 18px 20px;
+            margin-bottom: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .hero-focus-content {
+            max-width: 640px;
+        }
+
+        .hero-eyebrow {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--muted);
+            margin-bottom: 4px;
+        }
+
+        .hero-focus-title {
+            font-size: 19px;
+            font-weight: 700;
+            margin: 0 0 4px;
+            color: var(--text);
+        }
+
+        .hero-focus-reason {
+            font-size: 13px;
+            color: var(--text);
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        .progress-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 14px 18px;
+            margin-bottom: 22px;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 10px;
+        }
+
+        .roadmap-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .step-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 16px 18px;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+
+        .step-card.current-focus {
+            background: #F4FBFB;
+            border-color: var(--blue);
+        }
+
+        .step-card.locked {
+            background: #FAFCFD;
+            opacity: 0.88;
+        }
+
+        .step-number-label {
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--muted);
+            flex-shrink: 0;
+            min-width: 24px;
+            padding-top: 2px;
+        }
+
+        .step-card.current-focus .step-number-label {
+            color: #0f766e;
+        }
+
+        .step-body {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .step-top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 4px;
+        }
+
+        .step-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text);
+            margin: 0;
+        }
+
+        .step-reason {
+            font-size: 13px;
+            color: var(--text);
+            margin: 0 0 10px;
+            line-height: 1.5;
+        }
+
+        .step-footer-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding-top: 10px;
+            border-top: 1px solid #EEF2F6;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .skipped-section {
+            margin-top: 24px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 14px 18px;
+        }
+
+        .skipped-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .skipped-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            font-size: 13px;
+            padding: 8px 12px;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+        }
+
+        .bottom-actions-row {
+            margin-top: 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 14px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        @media (max-width: 700px) {
+            .hero-focus-card {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .step-card {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .bottom-actions-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="navbar">
+        <a href="{{ url_for('home') }}" class="logo">
+            Learn<span>ly</span>
+        </a>
+
+        <div class="nav-links-cluster">
+            <a href="{{ url_for('module3', course=course) }}" class="nav-tab-link">Knowledge Graph</a>
+            <a href="{{ url_for('module4', course=course) }}" class="nav-tab-link">Skill Gaps</a>
+            <a href="{{ url_for('module5', course=course, goal=goal) }}" class="nav-tab-link active">Learning Path</a>
+            <a href="{{ url_for('module6') }}" class="nav-tab-link">My Progress</a>
+            <a href="{{ url_for('home') }}" class="nav-tab-link">&larr; Dashboard</a>
+        </div>
+    </header>
+
+    <main>
+        <div class="page-header-row">
+            <div>
+                <h1 style="font-size: 24px; font-weight: 700; margin-bottom: 4px;">
+                    Learning Path
+                </h1>
+                <p style="color: var(--muted); margin: 0; font-size: 14px;">
+                    Course: <strong style="color: var(--text);">{{ path_result.course_name if path_result else course }}</strong>
+                </p>
+            </div>
+        </div>
+
+        {% if path_result and path_result.learning_path %}
+        {% set lp = path_result.learning_path %}
+        {% set active_course = path_result.course_name %}
+
+        <!-- RECOMMENDED NEXT TOPIC -->
+        {% if lp.current_focus %}
+        {% set focus = lp.current_focus %}
+        <section class="hero-focus-card" aria-label="Recommended next topic">
+            <div class="hero-focus-content">
+                <div class="hero-eyebrow">
+                    Next Topic &middot; {{ focus.status }}{% if focus.mastery_state and focus.mastery_state != 'Unassessed' %} ({{ focus.mastery_state }}){% endif %}
+                </div>
+                <h2 class="hero-focus-title">{{ focus.topic_name }}</h2>
+                <p class="hero-focus-reason">{{ focus.why_recommended }}</p>
+            </div>
+
+            <div>
+                <a href="{{ url_for('topic_practice', topic_id=focus.topic_id, course=active_course) }}"
+                    class="btn-primary" style="font-size: 13px; padding: 10px 18px;">
+                    {{ focus.step_action }} &rarr;
+                </a>
+            </div>
+        </section>
+        {% else %}
+        <section class="hero-focus-card" aria-label="All topics verified">
+            <div class="hero-focus-content">
+                <div class="hero-eyebrow">Course Complete</div>
+                <h2 class="hero-focus-title">All Topics Completed</h2>
+                <p class="hero-focus-reason">All topics in this course are completed.</p>
+            </div>
+            <div>
+                <a href="{{ url_for('module6') }}" class="btn-primary" style="font-size: 13px; padding: 10px 18px;">
+                    View My Progress &rarr;
+                </a>
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- OVERALL PATH PROGRESS -->
+        <section class="progress-card" aria-label="Mastery completion progress">
+            <div class="progress-header">
+                <div>
+                    <strong style="color: var(--text); font-size: 14px;">Progress</strong>
+                    <span style="color: var(--muted); font-size: 13px; margin-left: 6px;">
+                        ({{ lp.completed_steps }} of {{ lp.total_course_topics }} topics completed)
+                    </span>
+                </div>
+                <strong style="font-size: 15px; color: var(--blue);">{{ lp.progress_percentage }}%</strong>
+            </div>
+            <progress class="learnly-progress" max="100" value="{{ lp.progress_percentage }}" aria-label="Course completion percentage"></progress>
+        </section>
+
+        <!-- ACTIVE RECOMMENDED SEQUENCE -->
+        {% if lp.sequence %}
+        <section aria-label="Recommended learning sequence">
+            <h2 style="font-size: 17px; font-weight: 700; color: var(--text); margin: 0 0 14px;">
+                Topics
+            </h2>
+
+            <div class="roadmap-container">
+                {% for step in lp.sequence %}
+                {% set m_cls = step.mastery_state | lower | replace(' ', '-') %}
+                <article class="step-card {% if step.is_current_focus %}current-focus{% endif %} {% if step.is_locked %}locked{% endif %}">
+                    <div class="step-number-label">
+                        {{ step.step_number }}.
+                    </div>
+
+                    <div class="step-body">
+                        <div class="step-top-row">
+                            <h3 class="step-title">{{ step.topic_name }}</h3>
+                            <span class="status-label {{ step.status | lower | replace(' ', '-') }}">
+                                {{ step.status }}{% if step.mastery_state and step.mastery_state != 'Unassessed' and step.mastery_state != step.status %} &middot; {{ step.mastery_state }}{% endif %}
+                            </span>
+                        </div>
+
+                        <p class="step-reason">{{ step.why_recommended }}</p>
+
+                        <div class="step-footer-row">
+                            <div>
+                                {% if step.prerequisites %}
+                                    <span>Prerequisites: <strong style="color: var(--text);">{{ step.prerequisites | join(', ') }}</strong></span>
+                                {% else %}
+                                    <span>Foundation topic</span>
+                                {% endif %}
+                                <span style="margin-left: 12px;">&middot; {{ step.estimated_time }}</span>
+                            </div>
+
+                            <div>
+                                {% if step.is_locked %}
+                                    <span style="color: #64748b; font-weight: 600;">
+                                        Complete {{ step.missing_prerequisites | join(', ') }} first
+                                    </span>
+                                {% else %}
+                                    <a href="{{ url_for('topic_practice', topic_id=step.topic_id, course=active_course) }}"
+                                       class="{% if step.is_current_focus %}btn-primary{% else %}btn-secondary{% endif %}"
+                                       style="min-height: 34px; font-size: 12px; padding: 5px 12px;">
+                                        {{ step.step_action }} &rarr;
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- COMPLETED TOPICS -->
+        {% if lp.skipped_mastered %}
+        <section class="skipped-section" aria-label="Completed topics">
+            <h2 style="font-size: 15px; font-weight: 700; color: var(--text); margin: 0 0 4px;">
+                Completed Topics ({{ lp.skipped_mastered | length }})
+            </h2>
+            <div class="skipped-list">
+                {% for sk in lp.skipped_mastered %}
+                <div class="skipped-item">
+                    <div>
+                        <strong style="color: var(--text);">{{ sk.topic_name }}</strong>
+                        <span class="mastery-text {{ sk.mastery_state | lower | replace(' ', '-') }}" style="margin-left: 10px;">Completed &middot; {{ sk.mastery_state }} ({{ sk.mastery_score }}%)</span>
+                    </div>
+                    <a href="{{ url_for('topic_practice', topic_id=sk.topic_id, course=active_course) }}"
+                       class="text-link-muted" style="text-decoration: underline;">
+                        Review topic
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        {% endif %}
+
+        <div class="bottom-actions-row">
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <a href="{{ url_for('module3', course=course) }}" class="btn-secondary">Knowledge Graph</a>
+                <a href="{{ url_for('module4', course=course) }}" class="btn-secondary">Skill Gaps</a>
+            </div>
+            <a href="{{ url_for('home') }}" class="btn-secondary">Return to Dashboard</a>
+        </div>
+    </main>
+
+    <footer>
+        <p>Learnly | Personalized Learning</p>
+    </footer>
+
+</body>
+</html>

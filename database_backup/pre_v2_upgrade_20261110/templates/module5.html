@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learnly | Learning Path</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        :root {
+            --status-completed: #15803d;
+            --status-inprogress: #b45309;
+            --status-available: #0369a1;
+            --status-locked: #64748b;
+        }
+
+        .page-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .controls-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .control-select {
+            padding: 7px 12px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            background: var(--white);
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            cursor: pointer;
+        }
+
+        /* Current Focus Card */
+        .hero-focus-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .hero-focus-content {
+            max-width: 620px;
+        }
+
+        .hero-eyebrow {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+            color: var(--blue);
+            margin-bottom: 4px;
+        }
+
+        .hero-focus-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin: 0 0 6px;
+            color: var(--text);
+        }
+
+        .hero-focus-desc {
+            font-size: 13px;
+            color: var(--muted);
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        /* Overall Progress Card */
+        .progress-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 16px 20px;
+            margin-bottom: 24px;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar-track {
+            height: 8px;
+            background: #EEF2F6;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--blue);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        /* Roadmap Steps */
+        .roadmap-container {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .step-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 18px 22px;
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+            transition: border-color 0.15s ease;
+        }
+
+        .step-card:hover {
+            border-color: var(--blue);
+        }
+
+        .step-card.current-focus {
+            background: #F0FDFD;
+            border-color: var(--blue);
+        }
+
+        .step-number-bubble {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            font-weight: 700;
+            font-size: 13px;
+            flex-shrink: 0;
+            background: #EEF2F6;
+            color: var(--muted);
+        }
+
+        .step-card.completed .step-number-bubble {
+            background: #ECFDF5;
+            color: var(--status-completed);
+        }
+
+        .step-card.current-focus .step-number-bubble {
+            background: #E7F8F8;
+            color: var(--blue);
+        }
+
+        .step-body {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .step-top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .milestone-tag {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--muted);
+            margin-bottom: 2px;
+        }
+
+        .step-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text);
+            margin: 0;
+        }
+
+        .step-meta-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 6px;
+            padding-top: 8px;
+            border-top: 1px solid #EEF2F6;
+        }
+
+        .step-meta-item strong {
+            color: var(--text);
+        }
+
+        .missing-warning {
+            color: #DC2626;
+            font-weight: 600;
+        }
+
+        /* Bottom Action Buttons */
+        .bottom-actions-row {
+            margin-top: 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 14px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        @media (max-width: 768px) {
+            .hero-focus-card {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .step-card {
+                flex-direction: column;
+            }
+            .bottom-actions-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <header class="navbar">
+        <a href="{{ url_for('home') }}" class="logo">
+            Learn<span>ly</span>
+        </a>
+
+        <div class="nav-links-cluster">
+            <a href="{{ url_for('module3', course=course) }}" class="nav-tab-link" title="Knowledge Graph">
+                Knowledge Graph
+            </a>
+            <a href="{{ url_for('module4', course=course) }}" class="nav-tab-link" title="Skill Gaps">
+                Skill Gaps
+            </a>
+            <a href="{{ url_for('module5', course=course, goal=goal) }}" class="nav-tab-link active" title="Learning Path">
+                Learning Path
+            </a>
+            <a href="{{ url_for('module6') }}" class="nav-tab-link" title="My Progress">
+                My Progress
+            </a>
+            <a href="{{ url_for('home') }}" class="nav-tab-link" title="Return to Dashboard">
+                &larr; Dashboard
+            </a>
+        </div>
+    </header>
+
+    <main>
+
+        <!-- PAGE HEADER & CONTROLS -->
+        <div class="page-header-row">
+            <div>
+                <p class="eyebrow">Learning Sequence</p>
+                <h1 style="font-size: clamp(26px, 4vw, 34px); font-weight: 800; letter-spacing: -0.7px; margin-bottom: 6px;">
+                    Personalized Learning Path
+                </h1>
+                <p style="color: var(--muted); margin: 0; font-size: 14px;">
+                    Course: <strong style="color: var(--text);">{{ path_result.course_name if path_result else course }}</strong>
+                </p>
+            </div>
+
+            <div class="controls-row">
+                <!-- Course Switcher -->
+                {% if all_courses %}
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <label for="course-select" style="font-size: 12px; font-weight: 600; color: var(--muted);">Course:</label>
+                    <select id="course-select" class="control-select" onchange="location.href='/module5?course=' + encodeURIComponent(this.value) + '&goal=' + encodeURIComponent(document.getElementById('goal-select').value);">
+                        {% for c in all_courses %}
+                        <option value="{{ c['name'] }}" {% if (path_result and c['name'] == path_result.course_name) or c['name'] == course %}selected{% endif %}>
+                            {{ c['name'] }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+
+                <!-- Goal Filter Selector -->
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <label for="goal-select" style="font-size: 12px; font-weight: 600; color: var(--muted);">Goal:</label>
+                    <select id="goal-select" class="control-select" onchange="location.href='/module5?course=' + encodeURIComponent(document.getElementById('course-select').value) + '&goal=' + encodeURIComponent(this.value);">
+                        <option value="Full Curriculum" {% if goal == 'Full Curriculum' %}selected{% endif %}>Full Curriculum</option>
+                        <option value="Beginner" {% if goal == 'Beginner' %}selected{% endif %}>Beginner (Basics)</option>
+                        <option value="Intermediate" {% if goal == 'Intermediate' %}selected{% endif %}>Intermediate (Core Logic)</option>
+                        <option value="Advanced" {% if goal == 'Advanced' %}selected{% endif %}>Advanced (Complete)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        {% if path_result and path_result.learning_path %}
+        {% set lp = path_result.learning_path %}
+
+        <!-- CURRENT RECOMMENDED FOCUS HERO BANNER -->
+        {% if lp.current_focus %}
+        {% set focus = lp.current_focus %}
+        <section class="hero-focus-card" aria-label="Current recommended learning focus">
+            <div class="hero-focus-content">
+                <div class="hero-eyebrow">
+                    Recommended Next Step (#{{ focus.step_number }})
+                </div>
+                <h2 class="hero-focus-title">{{ focus.topic_name }}</h2>
+                <p class="hero-focus-desc">
+                    {{ focus.description or "Prerequisites satisfied. Mastering this topic advances your curriculum." }}
+                </p>
+                {% if focus.prerequisites %}
+                <p style="font-size: 12px; color: var(--muted); margin: 6px 0 0;">
+                    Prerequisites satisfied: {{ focus.prerequisites | join(', ') }}
+                </p>
+                {% endif %}
+            </div>
+
+            <div>
+                <a href="{{ url_for('module3', course=course) }}" class="btn-primary" style="text-decoration: none; font-size: 13px; padding: 8px 14px;">
+                    Open in Knowledge Graph &rarr;
+                </a>
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- OVERALL SEQUENCE PROGRESS CARD -->
+        <section class="progress-card" aria-label="Personalized path completion progress">
+            <div class="progress-header">
+                <div>
+                    <strong style="color: var(--text); font-size: 14px;">Path Progress</strong>
+                    <span style="color: var(--muted); font-size: 13px; margin-left: 6px;">
+                        ({{ lp.completed_steps }} of {{ lp.total_steps }} steps mastered for <strong>{{ goal }}</strong>)
+                    </span>
+                </div>
+                <strong style="font-size: 16px; color: var(--blue);">{{ lp.progress_percentage }}%</strong>
+            </div>
+            <div class="progress-bar-track">
+                <div class="progress-bar-fill" style="width: {{ lp.progress_percentage }}%;"></div>
+            </div>
+        </section>
+
+        <!-- SEQUENTIAL CURRICULUM ROADMAP -->
+        <section aria-label="Step-by-step learning sequence">
+            <h2 style="font-size: 17px; font-weight: 700; color: var(--text); margin: 0 0 14px;">
+                Sequential Curriculum Steps
+            </h2>
+
+            <div class="roadmap-container">
+                {% for step in lp.sequence %}
+                {% set card_status_class = 'completed' if step.status == 'Completed' else ('current-focus' if step.is_current_focus else ('in-progress' if step.status == 'In Progress' else ('available' if step.status == 'Available' else 'locked'))) %}
+                
+                <article class="step-card {{ card_status_class }}">
+                    <div class="step-number-bubble">
+                        {% if step.status == 'Completed' %}
+                            &#10003;
+                        {% else %}
+                            {{ step.step_number }}
+                        {% endif %}
+                    </div>
+
+                    <div class="step-body">
+                        <div class="step-top-row">
+                            <div>
+                                <div class="milestone-tag">{{ step.milestone }}</div>
+                                <h3 class="step-title">{{ step.topic_name }}</h3>
+                            </div>
+
+                            <div style="font-size: 12px; font-weight: 600;">
+                                <span style="color: {% if step.status == 'Completed' %}var(--status-completed){% elif step.status == 'In Progress' %}var(--status-inprogress){% elif step.status == 'Available' %}var(--status-available){% else %}var(--status-locked){% endif %};">
+                                    {{ step.status }}
+                                </span>
+                                {% if step.is_current_focus %}
+                                <span style="color: var(--blue); margin-left: 6px;">
+                                    · Up Next
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        {% if step.description %}
+                        <p style="margin: 0; font-size: 13px; color: var(--muted); line-height: 1.5;">
+                            {{ step.description }}
+                        </p>
+                        {% endif %}
+
+                        <div class="step-meta-row">
+                            <div class="step-meta-item">
+                                <span>Action:</span>
+                                <strong>{{ step.step_action }}</strong>
+                            </div>
+
+                            <div class="step-meta-item">
+                                <span>Prerequisites:</span>
+                                {% if step.prerequisites %}
+                                    <strong>{{ step.prerequisites | join(', ') }}</strong>
+                                {% else %}
+                                    <em style="color: var(--muted);">None (Foundational)</em>
+                                {% endif %}
+                            </div>
+
+                            {% if step.missing_prerequisites %}
+                            <div class="step-meta-item missing-warning">
+                                <span>Missing:</span>
+                                <span>{{ step.missing_prerequisites | join(', ') }}</span>
+                            </div>
+                            {% endif %}
+
+                            <div class="step-meta-item">
+                                <span>Estimated:</span>
+                                <strong>{{ step.estimated_time }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+        </section>
+
+        {% endif %}
+
+        <!-- BOTTOM ACTIONS -->
+        <div class="bottom-actions-row">
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <a href="{{ url_for('module3', course=course) }}" class="btn-primary" style="text-decoration: none;">
+                    Knowledge Graph &rarr;
+                </a>
+                <a href="{{ url_for('module4', course=course) }}" class="btn-secondary" style="text-decoration: none;">
+                    Skill Gaps
+                </a>
+            </div>
+            <a href="{{ url_for('home') }}" class="btn-secondary" style="text-decoration: none;">
+                Return to Dashboard
+            </a>
+        </div>
+
+    </main>
+
+    <footer>
+        <p>Learnly | Personalized Learning</p>
+    </footer>
+
+</body>
+</html>
